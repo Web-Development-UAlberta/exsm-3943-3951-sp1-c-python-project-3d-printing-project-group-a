@@ -42,7 +42,7 @@
 
 ### **7. Project Deliverables**
 - Week 1: Scope draft, design draft
-- Week 2: ERD Mapping draft, wireframes draft, test plans
+- Week 2: ERD Mapping draft, wireframes draft, test plans draft
 - Week 3: Finalize ERD, wireframes, test plans
 - Week 4: Database creation
 - Week 5: Frontend and backend creation
