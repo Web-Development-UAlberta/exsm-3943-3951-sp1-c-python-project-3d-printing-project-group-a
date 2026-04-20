@@ -1,10 +1,11 @@
 # Scope Document: 3D Printing Online Store
 ### **1. Goals & Objectives**
-- The objective is to create a system that can be interacted by the Business and Customer. Both frontend and backend will allow seamless execution of activities and tracking throughout the system ecosystem.
+- The objective is to create a system that can be interacted by the Business and Customer. Both frontend and backend will allow seamless execution of activities and tracking throughout the ecosystem.
 
 ### **2. Requirements**
 - A database to host 3D Models
 - Ability for Customer to access 3D Models from database
+- Ability for Customer to upload 3D Models to database
 - Ability to select preferences (colour, material, 3D model)
 - Ability for System to generate a quote
 - Ability to calculate turnaround times based on materials in stock
@@ -14,7 +15,7 @@
 - Ability for Customer to create a profile
 - Ability to update profile, preference, payment info, track orders
 - A database to host store inventory
-- Ability to track stock inventory, quantity
+- Ability for Business to track stock inventory, quantity, fullfilment
 - Ability for System to process payments
 
 ### **3. Scope Description**
@@ -31,16 +32,13 @@
 - Functionality for Business stock tracking
 
 ### **4. Exclusions**
-- Ability for Customer to create their own 3D Models
-- Ability for Customer to use Digital Wallets, Paypal payment methods
+- [No Exclusions captured]
 
 ### **5. Constraints**
-- TBD
+- [No Contraints captured]
 
 ### **6. Assumptions**
-- Customer Quote will add an automatic default of “n” hours for low stock transactions where “n” is defined by Business
-- Customers will not be able to design their own 3D Models. They must select from database
-- No restrictions to Customer placing orders while “Low stock” and “No inventory”
+- [No Assumptions captured]
 
 ### **7. Project Deliverables**
 - Week 1: Scope draft, design draft
