@@ -1,149 +1,80 @@
-# Scope Document — 3D Printing E-Commerce Platform
+# Scope Document: 3D Printing Online Store
 
-## Table of Contents
+### **1. Project Overview**
+**Application Name:** 3D Printing Online Store
 
-1. [Project Overview](#project-overview)
-2. [Team Members](#team-members)
-3. [In-Scope Features](#in-scope-features)
-4. [Out-of-Scope Features](#out-of-scope-features)
-5. [Pending Client Clarification](#pending-client-clarification)
-6. [Constraints](#constraints)
-7. [Risks](#risks)
+**Development Team:** Johnny Kwan, Robel Measho, Rami Ayesh
 
----
+**Purpose:** Allow Customers to select/customize/design their own 3D objects for print, automate the quotating process to calculate costs of print/delivery, enable a payment system for order fulfillment, manage User accounts to store Customer information, and build an inventory management for Business to track assets.
 
-## Project Overview
+### **2. Scope Deliverables & Objectives**
+- Responsive frontend to allow efficiency on User navigation and system interaction
+- Simplified product selection and customization for better usability
+- Real-time calculations for cost and delivery
+- Maintainable storage and security of User account details
+- Inventory tracking for resupply and stock management
+- Automated order payment to decrease manual processing
 
-A web-based e-commerce platform for a 3D printing business. Customers can browse a library of 3D models, enter their desired dimensions, choose a filament material and color, and receive an automated live price quote. The system manages filament inventory, calculates turnaround times based on stock levels, and processes orders through a cart and checkout flow. Customers can track orders, cancel pending orders, and leave seller reviews. An admin dashboard allows the store owner to manage inventory via CSV upload and update order statuses.
+### **3. High-Level Business Requirements**
 
----
+| Impacted Area | Business Needs |
+| -------- | -------- |
+| **Customers (Frontend User)** | - A registration/login page for the User profile creation/login (Account Management)
+| |- A selection page to access/select/update 3D models (Asset Management)
+| |- A customization page to design/customize selected 3D model (Product Management)
+| |- A configuration page to configure printing preferences (Material, Colour, Quantity)
+| |- A cart page to calculate price of product based on design/material (Quote)
+| |- A cart page to expedite orders for additional costs
+| |- A cart page to calculate shipping costs (Quote)
+| |- A cart page to calculate turnaround times based on product, material, 
+| |- A checkout page to accept payment for order fulfillment (Payment System)
+| |- A tracking page to view the progress of their orders |
+| **Business (Backend User)** | - An admin page to manage User profiles (Account Management)
+| |- A dashboard to review orders for processing (Order Management)
+| |- An order page to update order status (Order Management)
+| |- A tracker page to for stock inventory (Asset Management) |
+| **System (Application)** | - A table to store general 3D models
+| |- A table to store 3D models uploaded by User
+| |- A table to manage Business assets/inventory
+| |- Notifications for low inventory based on threshold amounts (Asset Management)
+| |- Automated processing of online payments |
+| |
 
-## Team Members
+### **4. Core Features**
+#### **A. Frontend Features**
+- Design Editor: An interface to configure and customize order selections
+- Quotation: Real-time quotes with instant calculations and pricing
+- Account Management: Control and maintain profile settings and preferences
 
-| Name         | Role                         |
-| ------------ | ---------------------------- |
-| Robel Measho | Frontend Developer (Next.js) |
-| Rami Ayesh   | Backend Developer (Python)   |
-| Johnny Kwan  | Backend / Lead               |
+#### **B. Backend Features**
+- Asset Management: Simple visibility and control over stock and inventory
+- Notifications: Automation of system alerts for depleting assets
+- Payment Management: 
 
----
+### **5. Exclusions/Out of Scope**
+[No Exclusions captured]
 
-## In-Scope Features
+### **6. Scope Assumptions, Constraints, and Risks**
 
-### User Accounts
+| Impacted Area | Assumption |
+| -------- | -------- |
+| Payment Management |  Payment methods will be delivered as a proof of concept. Online payments will be simulated with no real-time payments triggers
+| |
 
-- Customer registration and login with JWT authentication
-- Customer profile page showing account details and order history
-- Edit profile information
-- Cancel pending orders from profile page
+| Impacted Area | Constraints |
+| -------- | -------- |
+| Time-Constraints |  The deliverables of the project will focus on essential business needs required for a functional system. Additional non-essential requirements may be placed in backlog due to project time-constraints. The Business will determine which requirements are essential and non-essential
+| |
 
-### Product Browsing & Configuration
+| Impacted Area | Risks |
+| -------- | -------- |
+| TBD |  No Risks Captured
+| |
 
-- Browse library of available 3D models with previews
-- Filter models by material and color
-- Enter custom dimensions (length, width, height in mm) per order
-- Select filament material and color
-- Toggle multi-color print option
-- Upload a reference image or file (any file type) on home page and configurator
-- Option to pay an expedited service fee for faster turnaround
-
-### Live Quoting & Pricing
-
-- Quote updates automatically as customer changes dimensions, material, and color
-- Price calculated based on material cost, color/filament cost, machine wear and tear, and extra fee
-- Turnaround time calculated based on filament stock levels
-- Lead time added automatically if selected material or color is out of stock
-- Estimated completion date and shipping date displayed to customer
-
-### Cart
-
-- Add products to cart from configurator
-- View all cart items with model name, material, color, and quantity
-- Adjust quantity per item with stepper (+/-)
-- Remove individual items from cart
-- Cancel entire cart
-- View running subtotal and total price
-- Proceed to checkout from cart
-
-### Order Management
-
-- Checkout with pseudo payment processing (always approved)
-- Cancel checkout and return to cart
-- Order statuses: Pending, Printing, Shipped, Completed
-- Cancel order only when status is Pending — cannot cancel once Printing starts
-- View full order history with status badges
-- View individual order details including all order items and sub-totals
-- Filament stock automatically decrements when order is placed
-
-### Seller Reviews
-
-- Customers can leave a review on completed orders only
-- Star rating (1-5) and written comment
-- Reviews displayed on customer profile page with overall rating summary
-- Rating breakdown bars showing distribution of reviews
-- Customer can delete their own reviews
-
-### Inventory Management
-
-- Admin uploads Color inventory via CSV file
-- Admin uploads Material inventory via CSV file
-- System tracks stock levels per color and material
-- Stock bars show visual low-stock warnings in admin dashboard
-- Low stock flagged for admin attention
-
-### Admin Dashboard
-
-- Stat cards showing active orders, low stock count, and total orders
-- Upload and manage Color CSV and Material CSV files
-- View all orders with ability to update status
-- Admin can cancel any order regardless of status
-
----
-
-## Out-of-Scope Features
-
-- Physical 3D printer hardware integration
-- Real-time print job monitoring
-- Mobile app — web only
-- Multi-language support
-- Customer support chat or ticketing system
-- Marketing features such as promotions, discount codes, or email campaigns
-- Shipping carrier API integration — shipping dates are estimated not live
-- Real 3D model file parsing for automatic dimension extraction
-
----
-
-## Pending Client Clarification
-
-The following items are not yet confirmed and will be updated once the client responds on Slack:
-
-- **Payment processing** — pseudo always-approved confirmed in spec but awaiting final client confirmation
-- **Customer model uploads** — admin-only CSV uploads currently in scope, customer self-uploads TBD
-- **Turnaround time formula** — exact calculation logic (hours per mm3, per material) to be confirmed
-- **Expedited fee amount** — exact dollar amount or percentage to be confirmed
-- **Machine wear and tear cost** — cost per material per hour to be confirmed or estimated
-- **Lead time values** — number of days per material/color when out of stock to be confirmed
-- **Must-haves vs nice-to-haves** — final priority list to be confirmed with client
-
----
-
-## Constraints
-
-- Project must be completed within 6 weeks
-- Tech stack: Next.js (frontend), Python (backend), GitHub for version control
-- Branch protection: pull requests to main require 2 approvals, direct commits to main are blocked
-- All tests must pass before final submission
-
----
-
-## Risks
-
-| Risk                                            | Likelihood | Impact | Mitigation                                                            |
-| ----------------------------------------------- | ---------- | ------ | --------------------------------------------------------------------- |
-| Turnaround time formula not confirmed by client | Medium     | High   | Follow up on Slack immediately, use placeholder logic until confirmed |
-| Dimension-based pricing logic is complex        | Medium     | High   | Backend team to define and document formula early                     |
-| CSV format inconsistencies from client          | Medium     | Medium | Define expected CSV column format in design doc                       |
-| Frontend and backend integration issues         | Medium     | High   | API contract agreed in design doc before any coding begins            |
-| Scope creep from client requests                | Medium     | Medium | Refer all new requests back to this scope document                    |
-| Team member falling behind                      | Low        | High   | Soft deadlines in team norms, ask for help early                      |
-| Cart and order state management complexity      | Medium     | Medium | Agree on state management approach in Week 2 design review            |
+### **7. Project Deliverables**
+- Week 1: Scope draft, design draft
+- Week 2: ERD Mapping draft, wireframes draft, test plans draft
+- Week 3: Finalize ERD, wireframes, test plans
+- Week 4: Database creation
+- Week 5: Frontend and backend creation
+- Week 6: Final Product
