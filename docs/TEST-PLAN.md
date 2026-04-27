@@ -6,7 +6,6 @@
 |Prepared by: |Johnny Kwan, Robel Measho, Rami Ayesh|
 |Version:| V1.0   |
 |Status: |  Draft |
-|||
 
 ### **2. Introduction**
 
@@ -73,7 +72,7 @@ The following test scenarios will be broken up into modules. Each category will 
 
 #### 6.1 User Management
 
-|ID|Test Scenario|Expected| Type|
+|ID|Test Scenario|Expected|Type|
 |-|-|-|-|
 UM-001|Register with a unique Username | Account created successfully, redirect back to login page|Positive
 UM-002|Register with an existing Username | Account not created, error message appears|Negative
@@ -85,7 +84,7 @@ UM-007|Login with existing Username and Password | User logged into Account, red
 UM-008|Login with non-existent Username and Password | User not logged in, error message appears|Negative
 
 #### 6.2 Page Navigation
-|ID|Test Scenario|Expected| Type|
+|ID|Test Scenario|Expected|Type|
 |-|-|-|-|
 PN-001|Navigate to the Home hyperlink | Page redirects to the Home page|Positive
 PN-002|Navigate to the Models hyperlink | Page redirects to the Models page|Positive
@@ -96,7 +95,7 @@ PN-006|Navigate to the Logout hyperlink | User logged out of account, redirect t
 PN-007|Navigate to non-existent page in URL | Browser error for page not found|Negative
 
 #### 6.3 Product Catalog
-|ID|Test Scenario|Expected| Type|
+|ID|Test Scenario|Expected|Type|
 |-|-|-|-|
 PT-001|Filter products by Material | Model library displays models based on Materials filter|Positive
 PT-002|Filter products by Material | Unselected Material not rendered|Negative
@@ -108,7 +107,7 @@ PT-007|Upload supported Files | File upload modal accepts upload, image stored i
 PT-008|Upload unsupported Files | File upload modal rejects upload, error message appears|Negative
 
 #### 6.4 Product Configuration
-|ID|Test Scenario|Expected| Type|
+|ID|Test Scenario|Expected|Type|
 |-|-|-|-|
 PF-001|View selected model | Preview image of model renders|Positive
 PF-002|Enter integers for model Dimensions | Integer input for Length, Width, and Height of model allowed|Positive
@@ -119,7 +118,7 @@ PF-006|Select Multi-color print | Selection of Multi-color print is persistent, 
 PF-007|Expedite an order | Selection of expedite is persistent, additional cost added to quote if applicable|Positive
 
 #### 6.5 Product Quotation
-|ID|Test Scenario|Expected| Type|
+|ID|Test Scenario|Expected|Type|
 |-|-|-|-|
 PQ-001|Select Dimensions of the model | Dimensions drive quote calculations| Positive
 PQ-002|Select Material of the model | Material drive quote calculations| Positive
@@ -132,7 +131,7 @@ PQ-008|View Shipping date | Shipping date will be calculated based on order attr
 PQ-009|View order Status | Default status before submission will be Pending status| Positive
 
 #### 6.6 Order Cart
-|ID|Test Scenario|Expected| Type|
+|ID|Test Scenario|Expected|Type|
 |-|-|-|-|
 OC-001|View selected Products | Cart will render selected products with model image and attributes| Positive
 OC-002|Change order quantity | Selected product quantity can be modified, subtotal recalculated based on quantity| Positive
@@ -142,7 +141,7 @@ OC-005|Keep shopping | Redirects user back to the Product catalog, selected prod
 OC-006|Proceed to Checkout | Redirects user to checkout page| Positive
 
 #### 6.7 Checkout
-|ID|Test Scenario|Expected| Type|
+|ID|Test Scenario|Expected|Type|
 |-|-|-|-|
 CO-001|Enter integers for payment Card number| Integer input for Card number is allowed | Positive
 CO-002|Enter letters for payment Card number| Letter input for Card number is disallowed | Negative
@@ -157,21 +156,52 @@ CO-010|Place order without payment details| Payment not processed, error message
 C0-011|View Order summary|Breakdown of order attributes and pricing renders|Positive
 
 #### 6.8 Order Tracking
-[TO BE ADDED]
+|ID|Test Scenario|Expected|Type|
+|-|-|-|-|
+|OT-001|View Order Id against order status|Status reflects current order status|Positive|
+|OT-002|View Order Id against order total|Total reflects current order total|Positive|
+|OT-003|View Order Id against order ship date|Ship Date reflects estimated ship date|Positive|
+|OT-004|Cancel an Order in Pending Status|Cancel button available, order cancelled, order id removed from order tracking|Positive|
+|OT-005|Cancel an Order past Pending Status|Cancel button no avilable, order not cancelled, order id remains in order tracking|Negative|
+|OT-006|Select Order Id to view Order Info|Order Info is displayed|Positive|
+
 #### 6.9 Customer Profile
-[TO BE ADDED]
+|ID|Test Scenario|Expected|Type|
+|-|-|-|-|
+|CP-001|View User Profile view|Profile details displayed, Edit Profile button available|Positive|
+|CP-002|View Recent Orders grid|Past orders displayed under Recent Orders|Positive|
+
 #### 6.10 Admin Dashboard
-[TO BE ADDED]
+|ID|Test Scenario|Expected|Type|
+|-|-|-|-|
+|AD-001|View Active Order counter|Counter rolls up all orders not in Completed status|Positive|
+|AD-002|View Low Stock counter|Counter rolls up filaments in low stock, filament reached refill thresholds|Positive|
+|AD-003|View Total Orders counter|Counter rolls up orders submitted, all order statuses included|Positive|
+|AD-004|View Revenue totals|Calcuation based on total orders against production costs and product customization|Positive|
+|AD-005|Update Filament stock|User enters in new filament amounts|Positive|
+|AD-006|View filament stock levels|Dashboard renders stock levels, filament measured in grams, low stock highlighted|Positive|
+|AD-007|View Active orders|Displays Orders submitted not in Completed status.|Positive|
 
 ### **7. Non-Functional Test Scenarios**
 The following test scenarios will be broken up into modules. Each category will contain non-functional test scenarios specific to the module.
 
 #### 7.1 Performance
-[TO BE ADDED]
-#### 7.2 Accessibility
-[TO BE ADDED]
-#### 7.3 Compatibility
-[TO BE ADDED]
+|ID|Test Scenario|Expected|Type|
+|-|-|-|-|
+|NP-001|Navigate product catalog|Acceptable response for product rendering|Positive|
+|NP-002|Filter product catalog|Acceptable response for product filtering action|Positive|
+|NP-003|Select a product|Acceptable response for product selection action|Positive|
+|NP-004|Upload a custom product|Acceptable response for model upload to backend storage|Positive|
+|NP-005|Real-time quote estimates|Instant response for quote calculations, preferences drive different costs|Positive|
+|NP-006|Add to cart|Acceptable response to add product to cart table|Positive|
+|NP-007|View cart|Acceptable response to display selected products|Positive|
+|NP-008|Make a Payment|Acceptable response to payment servers, return payment response|Positive|
+
+#### 7.2 Compatibility
+|ID|Test Scenario|Expected|Type|
+|-|-|-|-|
+|NC-001|Browser Compatibility|Application viewable through different browser types|Positive|
+|NC-002|Mobile Compatibility|Application viewable through mobile devices|Positive|
 
 ### **8. User Flow Test Cases**
 The following end-to-end User flows will validate complete order process flow across multiple modules. Each flow will simulate a realistic user journey within the application.
