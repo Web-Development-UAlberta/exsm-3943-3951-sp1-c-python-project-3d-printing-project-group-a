@@ -181,6 +181,9 @@ C0-011|View Order summary|Breakdown of order attributes and pricing renders|Posi
 |AD-005|Update Filament stock|User enters in new filament amounts|Positive|
 |AD-006|View filament stock levels|Dashboard renders stock levels, filament measured in grams, low stock highlighted|Positive|
 |AD-007|View Active orders|Displays Orders submitted not in Completed status.|Positive|
+|AD-008|View Print jobs|Dashboard renders list of printers, status of printer shows availability|Positive|
+|AD-009|Add a Printer|A printer is added to the dashboard|Positive|
+|AD-010|Remove a Printer|Printer is removed from the dashboard|Positive|
 
 ### **7. Non-Functional Test Scenarios**
 The following test scenarios will be broken up into modules. Each category will contain non-functional test scenarios specific to the module.
@@ -242,13 +245,13 @@ Test data will be used to simulate a proof-of-concept.
 |-|-|-|
 |User Account|johnny_k / Pass@1234!!0|Login, Profile, Order Tracking|
 |Credit Card|1111-2222-3333-4444 / 01/30 / 123 / Johnny Kay|Payment Processing|
-|3D Model File|custom_product.png|File Upload|
-|||
+|3D Model File|custom_product.3TL|File Upload|
+
 
 ### **10. Acceptance Criteria**
 #### Functional
 - All critical user scenarios complete without errors
-- Model file upload supports .PNG up to 100MB
+- Model file upload supports .3TL and .3MF up to 100MB
 - Instant quote renders 100% accuracy based on Product configuration
 - Payment processing complete without errors
 
