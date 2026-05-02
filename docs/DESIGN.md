@@ -177,7 +177,7 @@ The User will be presented with a payment screen which allows fluid interactions
 - Order_Header: order_header_id, user_id(FK > User), order_date, completion_date, shipping_date, status, shipping_price, extra_fee, total_price, order_tracking_number.
 - Order_Detail: order_detail_id, order_header_id(FK > Order_Header), product_id(FK > Product), order_quantity, sub_total.
 
-![image](../docs/ERD/design-ERD.png)
+![image](../docs/ERD/3D%20printing%20project%20ERD.jpg)
 
 ### **6 Wireframes**
 Users will be presented with the following pages for the structure of navigation. 
