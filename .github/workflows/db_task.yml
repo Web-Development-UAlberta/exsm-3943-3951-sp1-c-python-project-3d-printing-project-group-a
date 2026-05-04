@@ -19,8 +19,13 @@ jobs:
         with:
           python-version: '3.14'
 
-      - name: Install dependencies
+      - name: Install sqlalchemy
         run: pip install sqlalchemy
+        
+      - name:  Install mysqlclient
+        run: pip install mysqlclient
 
       - name: Run test
         run: python -m unittest discover -s tests
+
+       
