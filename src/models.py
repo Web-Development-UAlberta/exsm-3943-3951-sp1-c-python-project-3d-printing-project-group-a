@@ -5,6 +5,8 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
+from sqlalchemy import CheckConstraint
+
 engine = create_engine(
     'mysql+mysqldb://root:ramidatabase@localhost:3306/3d_printing_project',
     echo=True
@@ -15,7 +17,9 @@ Base = declarative_base()
 # USer
 class User(Base):
     __tablename__ = "Users"
-
+    __table_args__ = (
+        CheckConstraint("username IS NOT NULL AND username != ''", name="username_not_empty"),
+    )
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(200), unique=True, nullable=False)
     full_name = Column(String(200))
@@ -33,7 +37,9 @@ class User(Base):
 # Filament
 class Filament(Base):
     __tablename__ = "Filament"
-
+    __table_args__ = (
+        CheckConstraint("filament_price >= 0", name="filament_price_positive"),
+    )
     filament_id = Column(Integer, primary_key=True, autoincrement=True)
     material_name = Column(String(100), nullable=False)
     color_hex = Column(String(250))
@@ -85,7 +91,11 @@ class Tag(Base):
 # Model
 class Model(Base):
     __tablename__ = "Model"
-
+    __table_args__ = (
+        CheckConstraint("model_length >= 0", name="length_positive"),
+        CheckConstraint("model_width >= 0", name="width_positive"),
+        CheckConstraint("model_height >= 0", name="height_positive"),
+    )
     model_id = Column(Integer, primary_key=True, autoincrement=True)
     model_name = Column(String(100), nullable=False)
     model_length = Column(Float)
