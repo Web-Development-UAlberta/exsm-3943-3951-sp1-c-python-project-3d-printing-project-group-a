@@ -4,8 +4,8 @@
 |||
 |-----------|-----------|
 |Prepared by: |Johnny Kwan, Robel Measho, Rami Ayesh|
-|Version:| V1.0   |
-|Status: |  Draft |
+|Version:| V1.1   |
+|Status: |  Final |
 
 ### **2. Introduction**
 
