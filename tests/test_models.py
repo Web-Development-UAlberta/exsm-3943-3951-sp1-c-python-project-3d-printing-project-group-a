@@ -226,6 +226,125 @@ class TestModels(unittest.TestCase):
         with self.assertRaises(Exception):
             self.session.commit()
 
+    # edge case 
+    def test_user_missing_username(self):
+        user = User(
+            username=None,
+            phone_number="123",
+            city="C",
+            street_address="S",
+            province="ON"
+        )
 
+        self.session.add(user)
+
+        with self.assertRaises(Exception):
+            self.session.commit()
+
+    # empty string edge case
+    def test_user_empty_username(self):
+        user = User(
+            username="",
+            phone_number="123",
+            city="C",
+            street_address="S",
+            province="ON"
+        )
+
+        self.session.add(user)
+
+        with self.assertRaises(Exception):
+            self.session.commit()
+
+    # Invalid data 
+    def test_negative_filament_price(self):
+        filament = Filament(
+            material_name="PLA",
+            filament_price=-10
+        )
+
+        self.session.add(filament)
+
+        with self.assertRaises(Exception):
+            self.session.commit()
+
+    # Invalid dimensions 
+    def test_negative_model_dimensions(self):
+        tag = Tag(tag_name="Test")
+        filament = Filament(material_name="PLA", filament_price=10)
+        printer_type = PrinterType(printer_name="MK4", max_size=300)
+
+        printer = Printer(filament=filament, printer_type=printer_type)
+
+        model = Model(
+            model_name="Bad Model",
+            model_length=-5,
+            model_width=10,
+            model_height=10,
+            tag=tag,
+            printer=printer
+        )
+
+        self.session.add(model)
+
+        with self.assertRaises(Exception):
+            self.session.commit()
+
+    # Update test
+    def test_update_user(self):
+        user = User(
+            username="old_name",
+            phone_number="123",
+            city="C",
+            street_address="S",
+            province="ON"
+        )
+
+        self.session.add(user)
+        self.session.commit()
+
+        user.username = "new_name"
+        self.session.commit()
+
+        updated = self.session.query(User).filter_by(username="new_name").one()
+
+        self.assertEqual(updated.username, "new_name")
+
+    # delete test
+    def test_delete_user(self):
+        user = User(
+            username="delete_me",
+            phone_number="123",
+            city="C",
+            street_address="S",
+            province="ON"
+        )
+
+        self.session.add(user)
+        self.session.commit()
+
+        self.session.delete(user)
+        self.session.commit()
+
+        result = self.session.query(User).filter_by(username="delete_me").all()
+
+        self.assertEqual(len(result), 0)
+
+    # multiple records test
+    def test_multiple_users(self):
+        users = [
+            User(username="u1", phone_number="1", city="C", street_address="S", province="ON"),
+            User(username="u2", phone_number="2", city="C", street_address="S", province="ON"),
+            User(username="u3", phone_number="3", city="C", street_address="S", province="ON"),
+        ]
+
+        self.session.add_all(users)
+        self.session.commit()
+
+        result = self.session.query(User).all()
+
+        self.assertEqual(len(result), 3)
+
+        
 if __name__ == "__main__":
     unittest.main()
