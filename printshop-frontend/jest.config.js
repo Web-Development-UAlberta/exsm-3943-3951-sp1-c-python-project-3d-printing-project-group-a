@@ -6,7 +6,7 @@ const createJestConfig = nextJest({
 
 const config = {
   testEnvironment: "jsdom",
-  setupFilesAfterEnv: ['./printshop-frontend/jest.setup.js'],
+  setupFilesAfterEnv: ['jest.setup.js'],
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }],
   },
