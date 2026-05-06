@@ -27,6 +27,7 @@ jobs:
 
       - name: Install jest
         run: npm ci
+        working-directory: ./printshop-frontend
 
       - name: Install sqlalchemy
         run: pip install sqlalchemy
