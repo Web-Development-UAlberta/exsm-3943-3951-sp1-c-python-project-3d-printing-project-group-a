@@ -5,7 +5,13 @@ const createJestConfig = nextJest({
   dir: "./",
 });
 
-module.exports = createJestConfig({
+const customJestConfig = {
   testEnvironment: "jsdom",
-  setupFilesAfterEnv: [path.join(__dirname, "jest.setup.js")],
-});
+};
+
+const jestConfig = createJestConfig(customJestConfig);
+
+// IMPORTANT: inject setup AFTER next/jest processing
+jestConfig.setupFilesAfterEnv = [path.resolve(__dirname, "jest.setup.js")];
+
+module.exports = jestConfig;
