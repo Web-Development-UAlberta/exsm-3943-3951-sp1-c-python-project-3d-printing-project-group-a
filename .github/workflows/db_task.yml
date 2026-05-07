@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  test: 
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Code checkout
@@ -17,28 +17,28 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
-      
+          python-version: "3.14"
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: './printshop-frontend/package-lock.json'
+          cache: "npm"
+          cache-dependency-path: "./printshop-frontend/package-lock.json"
 
       - name: Install jest
-        run: npm ci
         working-directory: ./printshop-frontend
+        run: npm ci
 
       - name: Install sqlalchemy
         run: pip install sqlalchemy
-        
+
       - name: Install mysqlclient
         run: pip install mysqlclient
 
       - name: Run backend tests
         run: python -m unittest discover -s tests
 
-#     - name: Run frontend tests
-#       run: npm test
-#       working-directory: ./printshop-frontend
+      - name: Run frontend tests
+        working-directory: ./printshop-frontend
+        run: npm test
