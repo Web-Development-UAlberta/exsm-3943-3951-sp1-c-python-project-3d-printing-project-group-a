@@ -39,9 +39,12 @@ jobs:
       - name: Run backend tests
         run: python -m unittest discover -s tests
 
-      - name: Debug printshop-frontend contents
+      - name: Debug Jest config location
         working-directory: ./printshop-frontend
-        run: ls -la
+        run: |
+          pwd
+          ls -la
+          npx jest --showConfig
 
       - name: Run frontend tests
         working-directory: ./printshop-frontend
