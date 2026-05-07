@@ -8,7 +8,7 @@ const createJestConfig = nextJest({
 
 const config = {
   testEnvironment: "jsdom",
-  setupFilesAfterEnv: [path.join(__dirname, 'jest.setup.ts')],
+  setupFilesAfterEnv: [path.join(__dirname, 'jest.setup.js')],
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }],
   },
