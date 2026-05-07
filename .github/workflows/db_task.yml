@@ -39,13 +39,6 @@ jobs:
       - name: Run backend tests
         run: python -m unittest discover -s tests
 
-      - name: Debug Jest config location
-        working-directory: ./printshop-frontend
-        run: |
-          pwd
-          ls -la
-          npx jest --showConfig
-
       - name: Verify file exists at runtime
         working-directory: ./printshop-frontend
         run: |
