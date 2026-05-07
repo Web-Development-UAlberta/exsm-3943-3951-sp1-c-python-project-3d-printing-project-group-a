@@ -1,14 +1,12 @@
 const path = require("path");
 
 module.exports = {
-  rootDir: ".", // IMPORTANT: locks Jest to printshop-frontend folder
-
   testEnvironment: "jsdom",
 
-  setupFilesAfterEnv: [path.resolve(__dirname, "jest.setup.js")],
+  setupFilesAfterEnv: [path.join(__dirname, "jest.setup.js")],
 
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/$1",
+    "^@/(.*)$": path.join(__dirname, "$1"),
   },
 
   testPathIgnorePatterns: ["/node_modules/", "/.next/"],
