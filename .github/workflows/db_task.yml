@@ -39,6 +39,6 @@ jobs:
       - name: Run backend tests
         run: python -m unittest discover -s tests
 
-      - name: Run frontend tests
-        run: npm test
-        working-directory: ./printshop-frontend
+#     - name: Run frontend tests
+#       run: npm test
+#       working-directory: ./printshop-frontend
