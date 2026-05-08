@@ -44,6 +44,9 @@ jobs:
         run: |
           ls -la jest.setup.js
           node -e "console.log(require('fs').existsSync('./jest.setup.js'))"
+      - name: Clean install
+        working-directory: ./printshop-frontend
+        run: rm -rf node_modules package-lock.json && npm install
 
       - name: Run frontend tests
         working-directory: ./printshop-frontend
