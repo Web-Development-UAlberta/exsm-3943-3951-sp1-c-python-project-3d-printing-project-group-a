@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.models import (Base, User, Filament, PrinterType, Printer,Tag, Model, ModelFilament, OrderHeader, OrderDetail)
+from src.app.models import (Base, User, Filament, PrinterType, Printer,Tag, Model, ModelFilament, OrderHeader, OrderDetail)
 
 
 class TestModels(unittest.TestCase):
