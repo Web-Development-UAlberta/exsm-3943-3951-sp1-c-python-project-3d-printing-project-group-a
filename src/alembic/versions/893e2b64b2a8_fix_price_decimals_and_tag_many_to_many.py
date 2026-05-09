@@ -47,7 +47,8 @@ def upgrade() -> None:
         existing_nullable=False
     )
 
-    # remove old direct tag FK from model
+    # drop FK constraint first, then drop the column
+    op.drop_constraint('Model_ibfk_2', 'Model', type_='foreignkey')
     op.drop_column('Model', 'tag_id')
 
 
@@ -55,6 +56,7 @@ def downgrade() -> None:
     op.add_column('Model',
         sa.Column('tag_id', sa.Integer(), nullable=True)
     )
+    op.create_foreign_key('Model_ibfk_2', 'Model', 'Tag', ['tag_id'], ['tag_id'])
     op.alter_column('Order_Header', 'total_price',
         type_=sa.Float(),
         existing_nullable=False
