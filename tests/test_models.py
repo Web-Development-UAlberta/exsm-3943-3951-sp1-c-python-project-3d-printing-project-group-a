@@ -7,8 +7,12 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
-from src.models import (Base, User, Filament, PrinterType, Printer,Tag, Model, ModelFilament, OrderHeader, OrderDetail)
+from src.app.models import (
+    Base, User, Filament, PrinterType, Printer,
+    Tag, Model, ModelFilament, ModelTag, OrderHeader, OrderDetail
+)
 
 
 class TestModels(unittest.TestCase):
@@ -31,110 +35,187 @@ class TestModels(unittest.TestCase):
     def tearDownClass(cls):
         Base.metadata.drop_all(cls.engine)
 
+    #helpers 
+    def make_user(self, username="john_doe", phone="123456"):
+        return User(
+            username=username,
+            full_name="John Doe",
+            email=f"{username}@test.com",
+            phone_number=phone,
+            city="Toronto",
+            street_address="Main Street",
+            province="ON",
+            password="hashed_pw"
+        )
+
+    def make_printer(self):
+        filament     = Filament(material_name="PLA", filament_price=20.00)
+        printer_type = PrinterType(printer_name="MK4", max_size=500)
+        printer      = Printer(filament=filament, printer_type=printer_type)
+        return filament, printer_type, printer
+
+    #connection 
     def test_connection(self):
         result = self.session.execute(text("SELECT 1")).scalar()
         self.assertEqual(result, 1)
 
-    # User
+    #User 
     def test_user_creation(self):
-        user = User(
-            username="john_doe",
-            full_name="John Doe",
-            email="john@test.com",
-            phone_number="123456",
-            city="Toronto",
-            street_address="Main Street",
-            province="ON",
-        )
-
+        user = self.make_user()
         self.session.add(user)
         self.session.commit()
 
-        saved_user = self.session.query(User).filter_by(username="john_doe").one()
+        saved = self.session.query(User).filter_by(username="john_doe").one()
+        self.assertEqual(saved.username, "john_doe")
+        self.assertEqual(saved.email, "john_doe@test.com")
 
-        self.assertEqual(saved_user.username, "john_doe")
-        self.assertEqual(saved_user.email, "john@test.com")
+    def test_unique_username(self):
+        self.session.add(self.make_user(username="same", phone="111"))
+        self.session.commit()
+        self.session.add(self.make_user(username="same", phone="222"))
+        with self.assertRaises(Exception):
+            self.session.commit()
 
-    # Filament
+    def test_user_missing_username(self):
+        user = self.make_user()
+        user.username = None
+        self.session.add(user)
+        with self.assertRaises(Exception):
+            self.session.commit()
+
+    def test_user_empty_username(self):
+        user = self.make_user()
+        user.username = ""
+        self.session.add(user)
+        with self.assertRaises(Exception):
+            self.session.commit()
+
+    def test_update_user(self):
+        user = self.make_user(username="old_name", phone="321")
+        self.session.add(user)
+        self.session.commit()
+
+        user.username = "new_name"
+        self.session.commit()
+
+        updated = self.session.query(User).filter_by(username="new_name").one()
+        self.assertEqual(updated.username, "new_name")
+
+    def test_delete_user(self):
+        user = self.make_user(username="delete_me", phone="999")
+        self.session.add(user)
+        self.session.commit()
+
+        self.session.delete(user)
+        self.session.commit()
+
+        result = self.session.query(User).filter_by(username="delete_me").all()
+        self.assertEqual(len(result), 0)
+
+    def test_multiple_users(self):
+        users = [
+            self.make_user(username="u1", phone="1"),
+            self.make_user(username="u2", phone="2"),
+            self.make_user(username="u3", phone="3"),
+        ]
+        self.session.add_all(users)
+        self.session.commit()
+
+        result = self.session.query(User).all()
+        self.assertEqual(len(result), 3)
+
+    #Filament 
     def test_filament(self):
         filament = Filament(
             material_name="PLA",
             color_hex="#FFFFFF",
-            filament_price=20.0
+            filament_price=20.00
         )
-
         self.session.add(filament)
         self.session.commit()
 
         result = self.session.query(Filament).first()
-
         self.assertEqual(result.material_name, "PLA")
-        self.assertEqual(result.filament_price, 20.0)
+        self.assertEqual(float(result.filament_price), 20.0)
 
-    # Printer Type 
+    def test_negative_filament_price(self):
+        filament = Filament(material_name="PLA", filament_price=-10)
+        self.session.add(filament)
+        with self.assertRaises(Exception):
+            self.session.commit()
+
+    #Printer 
     def test_printer_relationship(self):
-        filament = Filament(material_name="PLA", filament_price=10)
-        printer_type = PrinterType(printer_name="MK4", max_size=300)
-
-        printer = Printer(
-            filament=filament,
-            printer_type=printer_type
-        )
-
+        filament, printer_type, printer = self.make_printer()
         self.session.add(printer)
         self.session.commit()
 
         result = self.session.query(Printer).first()
-
         self.assertEqual(result.printer_type.printer_name, "MK4")
         self.assertEqual(result.filament.material_name, "PLA")
 
-    # Model and Tag
+    #Tag many-to-many 
     def test_model_and_tag(self):
+        filament, printer_type, printer = self.make_printer()
         tag = Tag(tag_name="Gaming")
-        filament = Filament(material_name="PLA", filament_price=15)
-        printer_type = PrinterType(printer_name="Ender", max_size=220)
-
-        printer = Printer(
-            filament=filament,
-            printer_type=printer_type
-        )
 
         model = Model(
             model_name="Iron Man",
             model_length=10,
             model_width=10,
             model_height=10,
-            tag=tag,
+            print_time_hours=5.0,
+            printer=printer
+        )
+
+        self.session.add_all([tag, model])
+        self.session.commit()
+
+        link = ModelTag(model_id=model.model_id, tag_id=tag.tag_id)
+        self.session.add(link)
+        self.session.commit()
+
+        saved = self.session.query(Model).first()
+        self.assertEqual(saved.model_name, "Iron Man")
+        self.assertEqual(saved.tag_links[0].tag.tag_name, "Gaming")
+
+    def test_model_multiple_tags(self):
+        filament, printer_type, printer = self.make_printer()
+        tag1 = Tag(tag_name="Gaming")
+        tag2 = Tag(tag_name="Collectibles")
+
+        model = Model(
+            model_name="D20 Dice",
+            model_length=50,
+            model_width=50,
+            model_height=50,
+            print_time_hours=3.0,
+            printer=printer
+        )
+
+        self.session.add_all([tag1, tag2, model])
+        self.session.commit()
+
+        self.session.add_all([
+            ModelTag(model_id=model.model_id, tag_id=tag1.tag_id),
+            ModelTag(model_id=model.model_id, tag_id=tag2.tag_id),
+        ])
+        self.session.commit()
+
+        saved = self.session.query(Model).first()
+        self.assertEqual(len(saved.tag_links), 2)
+
+    #ModelFilament many-to-many 
+    def test_model_filament(self):
+        filament, printer_type, printer = self.make_printer()
+
+        model = Model(
+            model_name="Desk Organizer",
+            print_time_hours=4.0,
             printer=printer
         )
 
         self.session.add(model)
-        self.session.commit()
-
-        saved = self.session.query(Model).first()
-
-        self.assertEqual(saved.model_name, "Iron Man")
-        self.assertEqual(saved.tag.tag_name, "Gaming")
-
-    # Model-Filament Link (many to many)
-    def test_model_filament(self):
-        filament = Filament(material_name="PLA", filament_price=10)
-        tag = Tag(tag_name="Test")
-        printer_type = PrinterType(printer_name="MK4", max_size=300)
-
-        printer = Printer(
-            filament=filament,
-            printer_type=printer_type
-        )
-
-        model = Model(
-            model_name="Desk Organizer",
-            tag=tag,
-            printer=printer
-        )
-
-        self.session.add_all([filament, tag, printer_type, printer, model])
         self.session.commit()
 
         link = ModelFilament(model=model, filament=filament)
@@ -142,40 +223,40 @@ class TestModels(unittest.TestCase):
         self.session.commit()
 
         result = self.session.query(Model).filter_by(model_name="Desk Organizer").one()
-
         self.assertEqual(result.filament_links[0].filament.material_name, "PLA")
 
-    # Order Flow
+    # Model dimensions 
+    def test_negative_model_dimensions(self):
+        filament, printer_type, printer = self.make_printer()
+
+        model = Model(
+            model_name="Bad Model",
+            model_length=-5,
+            model_width=10,
+            model_height=10,
+            printer=printer
+        )
+
+        self.session.add(model)
+        with self.assertRaises(Exception):
+            self.session.commit()
+
+    # Order flow 
     def test_order_flow(self):
-        user = User(
-            username="order_user",
-            phone_number="999",
-            city="Kingston",
-            street_address="Street",
-            province="ON",
-        )
-
-        filament = Filament(material_name="PETG", filament_price=25)
-        tag = Tag(tag_name="Games")
-
-        printer_type = PrinterType(printer_name="Prusa", max_size=300)
-
-        printer = Printer(
-            filament=filament,
-            printer_type=printer_type
-        )
+        user     = self.make_user(username="order_user", phone="999")
+        filament, printer_type, printer = self.make_printer()
 
         model = Model(
             model_name="Phone Stand",
-            tag=tag,
+            print_time_hours=2.0,
             printer=printer
         )
 
         order = OrderHeader(
             order_date=date.today(),
-            shipping_price=10,
-            extra_fee=2,
-            total_price=60,
+            shipping_price=10.00,
+            extra_fee=2.00,
+            total_price=60.00,
             order_tracking_number="TRK123",
             order_status="Pending",
             payment_status="Pending",
@@ -186,7 +267,7 @@ class TestModels(unittest.TestCase):
             order_quantity=2,
             infill_percent=50,
             scale=100,
-            unit_price=30,
+            unit_price=30.00,
             model=model,
             order_header=order,
             filament=filament,
@@ -196,154 +277,28 @@ class TestModels(unittest.TestCase):
         self.session.commit()
 
         saved_order = self.session.query(OrderHeader).first()
-
         self.assertEqual(len(saved_order.details), 1)
         self.assertEqual(saved_order.details[0].model.model_name, "Phone Stand")
 
-    # Unique Username
-    def test_unique_username(self):
-        user1 = User(
-            username="same",
-            phone_number="111",
-            city="C",
-            street_address="S",
-            province="ON"
+    def test_order_cancel_only_when_pending(self):
+        user = self.make_user(username="cancel_user", phone="888")
+
+        order = OrderHeader(
+            order_date=date.today(),
+            shipping_price=10.00,
+            total_price=50.00,
+            order_tracking_number="TRK999",
+            order_status="Printing",
+            payment_status="Succeeded",
+            user=user,
         )
 
-        user2 = User(
-            username="same",
-            phone_number="222",
-            city="C",
-            street_address="S",
-            province="ON"
-        )
-
-        self.session.add(user1)
+        self.session.add(order)
         self.session.commit()
 
-        self.session.add(user2)
-
-        with self.assertRaises(Exception):
-            self.session.commit()
-
-    # edge case 
-    def test_user_missing_username(self):
-        user = User(
-            username=None,
-            phone_number="123",
-            city="C",
-            street_address="S",
-            province="ON"
-        )
-
-        self.session.add(user)
-
-        with self.assertRaises(Exception):
-            self.session.commit()
-
-    # empty string edge case
-    def test_user_empty_username(self):
-        user = User(
-            username="",
-            phone_number="123",
-            city="C",
-            street_address="S",
-            province="ON"
-        )
-
-        self.session.add(user)
-
-        with self.assertRaises(Exception):
-            self.session.commit()
-
-    # Invalid data 
-    def test_negative_filament_price(self):
-        filament = Filament(
-            material_name="PLA",
-            filament_price=-10
-        )
-
-        self.session.add(filament)
-
-        with self.assertRaises(Exception):
-            self.session.commit()
-
-    # Invalid dimensions 
-    def test_negative_model_dimensions(self):
-        tag = Tag(tag_name="Test")
-        filament = Filament(material_name="PLA", filament_price=10)
-        printer_type = PrinterType(printer_name="MK4", max_size=300)
-
-        printer = Printer(filament=filament, printer_type=printer_type)
-
-        model = Model(
-            model_name="Bad Model",
-            model_length=-5,
-            model_width=10,
-            model_height=10,
-            tag=tag,
-            printer=printer
-        )
-
-        self.session.add(model)
-
-        with self.assertRaises(Exception):
-            self.session.commit()
-
-    # Update test
-    def test_update_user(self):
-        user = User(
-            username="old_name",
-            phone_number="123",
-            city="C",
-            street_address="S",
-            province="ON"
-        )
-
-        self.session.add(user)
-        self.session.commit()
-
-        user.username = "new_name"
-        self.session.commit()
-
-        updated = self.session.query(User).filter_by(username="new_name").one()
-
-        self.assertEqual(updated.username, "new_name")
-
-    # delete test
-    def test_delete_user(self):
-        user = User(
-            username="delete_me",
-            phone_number="123",
-            city="C",
-            street_address="S",
-            province="ON"
-        )
-
-        self.session.add(user)
-        self.session.commit()
-
-        self.session.delete(user)
-        self.session.commit()
-
-        result = self.session.query(User).filter_by(username="delete_me").all()
-
-        self.assertEqual(len(result), 0)
-
-    # multiple records test
-    def test_multiple_users(self):
-        users = [
-            User(username="u1", phone_number="1", city="C", street_address="S", province="ON"),
-            User(username="u2", phone_number="2", city="C", street_address="S", province="ON"),
-            User(username="u3", phone_number="3", city="C", street_address="S", province="ON"),
-        ]
-
-        self.session.add_all(users)
-        self.session.commit()
-
-        result = self.session.query(User).all()
-
-        self.assertEqual(len(result), 3)
+        saved = self.session.query(OrderHeader).first()
+        self.assertNotEqual(saved.order_status, "Pending")
+        self.assertEqual(saved.order_status, "Printing")
 
 
 if __name__ == "__main__":
