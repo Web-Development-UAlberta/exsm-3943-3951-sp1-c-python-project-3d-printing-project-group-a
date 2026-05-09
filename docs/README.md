@@ -12,15 +12,36 @@ The 3D Printing Online Store functions through Python. This README gives Users e
 - User accounts and authentication
 
 ## **Tech Stack**
-- Next.js 16.2.4 (frontend framework)
-- Python 3.14 (backend framework)
-- HTML (web framework)
-- Tailwind CSS (frontend styling)
-- MariaDB (primary database)
-- GitHub (code repository)
-- Python Unittest (backend testing framework)
-- Jest (frontend testing framework)
-- React Testing Library (frontend testing framework)
+|Layer|Technology|Purpose|
+|--|--|--|
+|Repository|GitHub|Proect Management, Version Control|
+|Frontend|Next.js 16.2.4|Storefront, Admin UI|
+|Frontend|HTML5|Storefront, UI Design|
+|Frontend|Tailwind CSS|Storefront, Styling|
+|Backend|Python 3.14|Backend, Functions|
+|Database|MariaDB|Inventory Management|
+|Testing|Python Unittest|Backend Testing|
+|Testing|Jest|Frontend Testing|
+|Testing|React Testing Library|Storefront, Admin UI|
+
+## **Features**
+### **Customer-Facing**
+* Browse product catalog
+* Product filtering and sorting
+* Custom model upload
+* Configure preference and design
+* Automated quote estimates
+* Checkout and order tracking
+* User accounts and saved orders
+
+### **Admin-Facing**
+* CRUD operations
+* Print queue management
+* Order dashboard
+* Inventory management
+
+### **Backend Services**
+* Payment integration (Stripe)
 
 ## **Project Structure**
 ```
@@ -28,16 +49,16 @@ Main/
 │
 ├── docs/                   # Directory for project documentation 
 │   ├── erd/                # Directory for backend blueprints
-│   └── wireframes/         # Directory for  frontend blueprints
+│   └── wireframes/         # Directory for frontend blueprints
 │
 ├── node_modules/           # Directory for Node.js external libraries and dependencies
 │
 ├── printshop-frontend/     # Directory for frontend code
-│   ├── __tests__/           # Directory for backend tests
-│   ├── app/                     -- Next.js pages
-│   ├── jest.config.js           -- Jest configuration
-│   ├── jest.setup.js            -- Jest setup file
-│   └── package.json             -- Frontend dependencies
+│   ├── __tests__/          # Directory for backend tests
+│   ├── app/                # Next.js pages
+│   ├── jest.config.js      # Jest configuration
+│   ├── jest.setup.js       # Jest setup file
+│   └── package.json        # Frontend dependencies
 ├── src/
 │   ├── alembic/            # Directory for Alembic dependencies
 │   │   └── versions/       # Directory for database seed data
@@ -48,7 +69,7 @@ Main/
 
 ## **Local Development Setup**
 
-#### **1. Install Python**
+### **1. Install Python**
 * Download the latest installer from [python.org](https://www.python.org/downloads/)
 * Run the installer (64-bit recommended)
 * **Important:** Select the checkbox that says "Add Python to PATH" at the bottom of the installer
@@ -57,7 +78,7 @@ Main/
 python --version
 ```
 
-#### **2. Install MariaDb**
+### **2. Install MariaDb**
 * Download the latest installer from [mariadb.org](https://mariadb.org/download/)
 * Run the installer
 * Configure a strong root password when prompted
@@ -66,7 +87,7 @@ python --version
 mariadb --version
 ```
 
-#### **3. Clone the repository**
+### **3. Clone the repository**
 * In a local directory, open the folder in VS Code (preferred choice of IDE)
 * Open a new Terminal
 * Use the following command to clone the repository:
@@ -74,7 +95,7 @@ mariadb --version
 git clone https://github.com/Web-Development-UAlberta/exsm-3943-3951-sp1-c-python-project-3d-printing-project-group-a.git
 ```
 
-#### **4. Create a virtual environment**
+### **4. Create a virtual environment**
 * In VS Code code, press "Ctrl+Shift+P"
 * Select "Python: Create Environment"
 * Select "venv"
@@ -109,20 +130,47 @@ pip install sqlalchemy
 pip install mysqlclient
 ```
 
-### **7. Run database migrations** [PENDING]
+### **7. Run database migrations**
+* Run the following command in MariaDB
+```
+CREATE DATABASE 3d_printing_project
+```
+* In the "src" directory, open "models.py" file
+* Update the following line
+```
+mysql+mysqldb://{your root}:{your password}@localhost:3306/3d_printing_project'
+```
 * Run the following commands in Terminal
 ```
 pip install alembic
 alembic init alembic
 ```
-* In the "alembic" directory, open the "env.py" file
-* Update the following line with MariaDB password
+* In the "src" directory, open "alembic.ini" file
+* Change the following line
 ```
-url = config.get_main_option("mysql+mysqldb://root:yourpassword@localhost:3306/yourfoldername")
+sqlalchemy.url = mysql+mysqldb://{yor root}:{your password}@localhost:3306/3d_printing_project
+```
+* Run the following commands in Terminal
+```
+alembic revision --autogenerate -m"Initial migration
+alembic upgrade head
 ```
 
-### **8. Create a superuser** [PENDING]
-Create a superuser using the following method:
+### **8. Create a superuser**
+* Run the following command in MariaDB
+```
+USE 3d_printing_project
+```
+* Update the below values tagged as [YOUR_]. Run the following commands once database is selected
+```
+INSERT INTO Users(
+    username, full_name, 
+    phone_number, city, 
+    street_address, province, 
+    postal_code, is_admin)
+VALUES('YOUR_USERNAME','YOUR_FULL_NAME', 'YOUR_PHONENUMBER, 'YOUR_CITY', 'YOUR_STREET_ADDRESS', 'YOUR_PROVINCE', 'YOUR_POSTALCODE', TRUE);
+COMMIT;
+```
 
 ### **9. Start the development server**
 * Run the following command in Terminal to run a development server
@@ -158,32 +206,15 @@ stripe listen --forward-to localhost:8000/api/payments/webhook/
 ```
 
 ## **Running Tests**
-#### **Frontend Automated Tests**
+### **Frontend Automated Tests (Unittest)**
 * For automated frontend testing, run the following command in Terminal
 ```
 python -m unittest discover
 ```
 * You should see all 15 tests passing
 
-#### **Backend Automated Tests**
+### **Backend Automated Tests (Next.js)**
 * For automated backend testing, run the following command in Terminal
 ```
 npm test
-```
-* You should see all 11 tests passing:
-
-```
-PASS __tests__/home.test.jsx
-PASS __tests__/login.test.jsx
-PASS __tests__/register.test.jsx
-PASS __tests__/custom-upload.test.jsx
-PASS __tests__/configurator.test.jsx
-PASS __tests__/cart.test.jsx
-PASS __tests__/checkout.test.jsx
-PASS __tests__/order-tracking.test.jsx
-PASS __tests__/profile.test.jsx
-PASS __tests__/edit-profile.test.jsx
-PASS __tests__/admin.test.jsx
-
-Tests: 11 passed
 ```
