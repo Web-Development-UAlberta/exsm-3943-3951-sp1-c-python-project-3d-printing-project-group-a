@@ -55,6 +55,9 @@ jobs:
       - name: Install mysqlclient
         run: pip install mysqlclient
       
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+
       - name: Install Python dependencies
         run: pip install -r src/requirements.txt
 
