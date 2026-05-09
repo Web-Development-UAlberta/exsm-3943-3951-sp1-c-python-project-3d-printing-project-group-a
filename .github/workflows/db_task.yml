@@ -1,51 +1,77 @@
 name: Trigger unittest
 env:
   PYTHONPATH: .
+  DB_URL: mysql+mysqldb://testuser:testpass@127.0.0.1:3306/test_db
+  JWT_SECRET: test-secret-key
+  STRIPE_SECRET_KEY: sk_test_dummy
+  FLASK_ENV: development
 on:
   push:
     branches:
       - main
   pull_request:
-
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
-
+          python-version: '3.10'
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: "npm"
           cache-dependency-path: "./printshop-frontend/package-lock.json"
-
       - name: Install jest
         run: npm ci
         working-directory: ./printshop-frontend
-
       - name: Install sqlalchemy
         run: pip install sqlalchemy
-
-      - name: Install mysqlclient
-        run: pip install mysqlclient
-
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+      - name: Install Python dependencies
+        run: pip install -r src/requirements.txt
+      - name: Wait for MySQL and setup test user
+        run: |
+          for i in {1..30}; do
+            mysqladmin ping -h 127.0.0.1 -u root -proot --silent && break
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+          mysql -h 127.0.0.1 -P 3306 -u root -proot <<EOF
+          CREATE USER IF NOT EXISTS 'testuser'@'%' IDENTIFIED BY 'testpass';
+          GRANT ALL PRIVILEGES ON test_db.* TO 'testuser'@'%';
+          FLUSH PRIVILEGES;
+          EOF
+      - name: Run database migrations
+        run: |
+          cd src
+          alembic upgrade head
       - name: Run backend tests
-        run: python -m unittest discover -s tests
-
+        run: python -m unittest discover -s tests -v
       - name: Clean root node_modules
         run: rm -rf node_modules/
-
       - name: Install frontend dependencies
         run: npm ci
         working-directory: ./printshop-frontend
-
       - name: Run frontend tests
         run: npm test
         working-directory: ./printshop-frontend
