@@ -16,10 +16,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column('Model',
-        sa.Column('print_time_hours', sa.DECIMAL(precision=6, scale=2), nullable=True)
-    )
+    op.add_column('model',
+        sa.Column('print_time_hours', sa.DECIMAL(precision=6, scale=2), nullable=True))
 
 
 def downgrade() -> None:
-    op.drop_column('Model', 'print_time_hours')
+    op.drop_column('model', 'print_time_hours')

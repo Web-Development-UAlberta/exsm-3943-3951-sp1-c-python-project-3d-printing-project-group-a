@@ -52,29 +52,29 @@ def upgrade() -> None:
     op.drop_column('Model', 'tag_id')
 
 
+def upgrade() -> None:
+    op.create_table('model_tag',
+        sa.Column('model_id', sa.Integer(), nullable=False),
+        sa.Column('tag_id', sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(['model_id'], ['model.model_id']),
+        sa.ForeignKeyConstraint(['tag_id'], ['tag.tag_id']),
+        sa.PrimaryKeyConstraint('model_id', 'tag_id')
+    )
+    op.alter_column('filament', 'filament_price',
+        type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=False)
+    op.alter_column('order_detail', 'unit_price',
+        type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=True)
+    op.alter_column('order_header', 'shipping_price',
+        type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=False)
+    op.alter_column('order_header', 'extra_fee',
+        type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=True)
+    op.alter_column('order_header', 'total_price',
+        type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=False)
+    op.drop_constraint('model_ibfk_2', 'model', type_='foreignkey')
+    op.drop_column('model', 'tag_id')
+
+
+
 def downgrade() -> None:
-    op.add_column('Model',
-        sa.Column('tag_id', sa.Integer(), nullable=True)
-    )
-    op.create_foreign_key('Model_ibfk_2', 'Model', 'Tag', ['tag_id'], ['tag_id'])
-    op.alter_column('Order_Header', 'total_price',
-        type_=sa.Float(),
-        existing_nullable=False
-    )
-    op.alter_column('Order_Header', 'extra_fee',
-        type_=sa.Float(),
-        existing_nullable=True
-    )
-    op.alter_column('Order_Header', 'shipping_price',
-        type_=sa.Float(),
-        existing_nullable=False
-    )
-    op.alter_column('Order_Detail', 'unit_price',
-        type_=sa.Float(),
-        existing_nullable=True
-    )
-    op.alter_column('Filament', 'filament_price',
-        type_=sa.Float(),
-        existing_nullable=False
-    )
+    op.add_column('model', sa.Column('tag_id', sa.Integer(), nullable=True))
     op.drop_table('model_tag')
