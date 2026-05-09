@@ -1,6 +1,6 @@
 from flask import Flask
-from src.app.config import Config
-from src.app.extensions import jwt, bcrypt, cors
+from .config import Config
+from .extensions import jwt, bcrypt, cors
 
 
 def create_app():
@@ -11,13 +11,13 @@ def create_app():
     bcrypt.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
-    from src.app.routes.auth import auth_bp
+    from .routes.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
-    from src.app.routes.users import users_bp
+    from .routes.users import users_bp
     app.register_blueprint(users_bp, url_prefix="/api/users")
 
-    from src.app.routes.models_routes import models_bp
+    from .routes.models_routes import models_bp
     app.register_blueprint(models_bp, url_prefix="/api/models")
 
     return app

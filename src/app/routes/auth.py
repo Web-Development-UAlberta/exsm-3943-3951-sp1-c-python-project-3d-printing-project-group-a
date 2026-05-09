@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
-from app.extensions import bcrypt
-from app.database import get_db
-from app.models import User
-from app.services.validation import validate_postal_code, validate_province, validate_phone
+from ..extensions import bcrypt
+from ..database import get_db
+from ..models import User
+from ..services.validation import validate_postal_code, validate_province, validate_phone
 
 auth_bp = Blueprint("auth", __name__)
 

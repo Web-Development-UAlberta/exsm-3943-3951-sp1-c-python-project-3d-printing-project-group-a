@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from app.database import get_db
-from app.models import Model, Filament, Tag, ModelTag
-from app.services.pricing import calculate_quote
+from ..database import get_db
+from ..models import Model, Filament, Tag, ModelTag
+from ..services.pricing import calculate_quote
 
 models_bp = Blueprint("models", __name__)
 
