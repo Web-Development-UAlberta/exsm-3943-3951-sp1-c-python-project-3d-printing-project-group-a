@@ -1,9 +1,13 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from contextlib import contextmanager
+from dotenv import load_dotenv
+
+load_dotenv()
 
 engine = create_engine(
-    'mysql+mysqldb://root:ramidatabase@localhost:3306/3d_printing_project',
-    connect_args={"host": "127.0.0.1"},
+    os.getenv("DB_URL"),
     echo=True
 )
 
@@ -13,5 +17,14 @@ SessionLocal = sessionmaker(
     bind=engine
 )
 
+@contextmanager
 def get_db():
-    return SessionLocal()
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except:
+        db.rollback()
+        raise
+    finally:
+        db.close()
