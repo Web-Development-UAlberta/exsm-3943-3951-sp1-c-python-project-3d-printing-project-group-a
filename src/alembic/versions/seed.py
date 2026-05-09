@@ -3,7 +3,7 @@ import sqlalchemy as sa
 from app.models import User, Filament, PrinterType, Printer, Tag, Model, ModelFilament, OrderHeader, OrderDetail
 
 revision = '1234567890'
-down_revision = None
+down_revision = '0cd4f77e0e19'
 branch_labels = None
 depends_on = None
 

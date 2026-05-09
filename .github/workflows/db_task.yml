@@ -52,9 +52,6 @@ jobs:
       - name: Install sqlalchemy
         run: pip install sqlalchemy
         
-      - name: Install mysqlclient
-        run: pip install mysqlclient
-      
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev
 
