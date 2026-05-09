@@ -14,7 +14,7 @@ on:
 jobs:
   test: 
     runs-on: ubuntu-latest
-    
+
     services:
       mysql:
         image: mysql:8.0
@@ -54,9 +54,17 @@ jobs:
         
       - name: Install mysqlclient
         run: pip install mysqlclient
+      
+      - name: Install Python dependencies
+        run: pip install -r src/requirements.txt
+
+      - name: Run database migrations
+        run: |
+          cd src
+          alembic upgrade head
 
       - name: Run backend tests
-        run: python -m unittest discover -s tests
+        run: python -m unittest discover -s tests -v
 
 #      - name: Debug - List Files
 #        run: ls -R
