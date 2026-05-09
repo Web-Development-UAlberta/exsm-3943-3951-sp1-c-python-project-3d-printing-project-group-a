@@ -1,12 +1,10 @@
 name: Trigger unittest
-
 env:
   PYTHONPATH: .
   DB_URL: mysql+mysqldb://testuser:testpass@127.0.0.1:3306/test_db
   JWT_SECRET: test-secret-key
   STRIPE_SECRET_KEY: sk_test_dummy
   FLASK_ENV: development
-
 on:
   push:
     branches:
@@ -27,63 +25,64 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -proot"
+          --health-cmd="mysqladmin ping"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=10
+          --health-retries=5
 
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
-
-      # ---------------- PYTHON ----------------
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Install MySQL client
-        run: sudo apt-get update && sudo apt-get install -y mysql-client libasound2-dev
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: "./printshop-frontend/package-lock.json"
+
+      - name: Install jest
+        run: npm ci
+        working-directory: ./printshop-frontend
+
+      - name: Install sqlalchemy
+        run: pip install sqlalchemy
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
 
       - name: Install Python dependencies
         run: pip install -r src/requirements.txt
 
-      - name: Wait for MySQL and create user
+      - name: Wait for MySQL and setup test user
         run: |
           for i in {1..30}; do
             mysqladmin ping -h 127.0.0.1 -u root -proot --silent && break
             echo "Waiting for MySQL..."
             sleep 2
           done
-
-          mysql -h 127.0.0.1 -u root -proot <<EOF
+          mysql -h 127.0.0.1 -P 3306 -u root -proot <<EOF
           CREATE USER IF NOT EXISTS 'testuser'@'%' IDENTIFIED BY 'testpass';
           GRANT ALL PRIVILEGES ON test_db.* TO 'testuser'@'%';
           FLUSH PRIVILEGES;
           EOF
 
       - name: Run database migrations
-        working-directory: ./src
-        run: alembic upgrade head
+        run: |
+          cd src
+          alembic upgrade head
 
       - name: Run backend tests
-        working-directory: ./src
         run: python -m unittest discover -s tests -v
 
-      # ---------------- NODE / FRONTEND ----------------
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: ./printshop-frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        working-directory: ./printshop-frontend
-        run: npm ci
+      - name: Debug - List Files
+        run: ls -R
 
       - name: Run frontend tests
+        run: npm test
         working-directory: ./printshop-frontend
-        run: npm test -- --watch=false
