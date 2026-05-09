@@ -1,6 +1,6 @@
 from alembic import op 
 import sqlalchemy as sa
-from models import User, Filament, PrinterType, Printer, Tag, Model, ModelFilament, OrderHeader, OrderDetail
+from app.models import User, Filament, PrinterType, Printer, Tag, Model, ModelFilament, OrderHeader, OrderDetail
 
 revision = '1234567890'
 down_revision = None
