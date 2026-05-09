@@ -1,7 +1,7 @@
 name: Trigger unittest
 env:
   PYTHONPATH: .
-  DB_URL: mysql+mysqldb://root:root@127.0.0.1:3306/test_db
+  DB_URL: mysql+mysqldb://testuser:testpass@127.0.0.1:3306/test_db
   JWT_SECRET: test-secret-key
   STRIPE_SECRET_KEY: sk_test_dummy
   FLASK_ENV: development
@@ -59,15 +59,19 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r src/requirements.txt
 
-      - name: Wait for MySQL and grant permissions
+      - name: Wait for MySQL and setup test user
         run: |
           for i in {1..30}; do
             mysqladmin ping -h 127.0.0.1 -u root -proot --silent && break
             echo "Waiting for MySQL..."
             sleep 2
           done
-          mysql -h 127.0.0.1 -u root -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-      
+          mysql -h 127.0.0.1 -P 3306 -u root -proot <<EOF
+          CREATE USER IF NOT EXISTS 'testuser'@'%' IDENTIFIED BY 'testpass';
+          GRANT ALL PRIVILEGES ON test_db.* TO 'testuser'@'%';
+          FLUSH PRIVILEGES;
+          EOF
+
       - name: Run database migrations
         run: |
           cd src
