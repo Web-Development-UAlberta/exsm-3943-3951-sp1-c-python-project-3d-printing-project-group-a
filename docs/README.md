@@ -115,7 +115,7 @@ node --version
 ```
 cd printshop-frontend
 ```
-* Run the following command in Terminal to install all dependencies
+* Run the following commands in Terminal to install all dependencies
 ```
 npm install
 ```
@@ -206,15 +206,16 @@ stripe listen --forward-to localhost:8000/api/payments/webhook/
 ```
 
 ## **Running Tests**
-### **Frontend Automated Tests (Unittest)**
+### **Frontend Automated Tests (Next.js)**
 * For automated frontend testing, run the following command in Terminal
 ```
-python -m unittest discover
+npm ci
+npm install --save-dev jest jest-environment-jsdom @testing-library/react @testing-library/jest-dom @testing-library/dom
 ```
-* You should see all 15 tests passing
 
-### **Backend Automated Tests (Next.js)**
+
+### **Backend Automated Tests (Unittest)**
 * For automated backend testing, run the following command in Terminal
 ```
-npm test
+python -m unittest discover
 ```
