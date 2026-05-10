@@ -8,6 +8,7 @@ Create Date: 2026-05-08 23:50:06.089685
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import text
 
 revision: str = '893e2b64b2a8'
 down_revision: Union[str, Sequence[str], None] = '332b152d0924'
@@ -33,8 +34,21 @@ def upgrade() -> None:
         type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=True)
     op.alter_column('order_header', 'total_price',
         type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=False)
-    with op.batch_alter_table('model') as batch_op:
-        batch_op.drop_column('tag_id')
+
+    conn = op.get_bind()
+    result = conn.execute(text("""
+        SELECT CONSTRAINT_NAME
+        FROM information_schema.KEY_COLUMN_USAGE
+        WHERE TABLE_NAME = 'model'
+        AND COLUMN_NAME = 'tag_id'
+        AND REFERENCED_TABLE_NAME = 'tag'
+        AND TABLE_SCHEMA = DATABASE()
+    """))
+    row = result.fetchone()
+    if row:
+        conn.execute(text(f"ALTER TABLE model DROP FOREIGN KEY `{row[0]}`"))
+
+    op.drop_column('model', 'tag_id')
 
 
 def downgrade() -> None:
