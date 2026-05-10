@@ -16,43 +16,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # create model_tag junction table
-    op.create_table('model_tag',
-        sa.Column('model_id', sa.Integer(), nullable=False),
-        sa.Column('tag_id', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['model_id'], ['Model.model_id']),
-        sa.ForeignKeyConstraint(['tag_id'], ['Tag.tag_id']),
-        sa.PrimaryKeyConstraint('model_id', 'tag_id')
-    )
-
-    # fix price fields to DECIMAL
-    op.alter_column('Filament', 'filament_price',
-        type_=sa.DECIMAL(precision=10, scale=2),
-        existing_nullable=False
-    )
-    op.alter_column('Order_Detail', 'unit_price',
-        type_=sa.DECIMAL(precision=10, scale=2),
-        existing_nullable=True
-    )
-    op.alter_column('Order_Header', 'shipping_price',
-        type_=sa.DECIMAL(precision=10, scale=2),
-        existing_nullable=False
-    )
-    op.alter_column('Order_Header', 'extra_fee',
-        type_=sa.DECIMAL(precision=10, scale=2),
-        existing_nullable=True
-    )
-    op.alter_column('Order_Header', 'total_price',
-        type_=sa.DECIMAL(precision=10, scale=2),
-        existing_nullable=False
-    )
-
-    # drop FK constraint first, then drop the column
-    op.drop_constraint('Model_ibfk_2', 'Model', type_='foreignkey')
-    op.drop_column('Model', 'tag_id')
-
-
-def upgrade() -> None:
     op.create_table('model_tag',
         sa.Column('model_id', sa.Integer(), nullable=False),
         sa.Column('tag_id', sa.Integer(), nullable=False),
@@ -70,11 +33,21 @@ def upgrade() -> None:
         type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=True)
     op.alter_column('order_header', 'total_price',
         type_=sa.DECIMAL(precision=10, scale=2), existing_nullable=False)
-    op.drop_constraint('model_ibfk_2', 'model', type_='foreignkey')
-    op.drop_column('model', 'tag_id')
-
+    with op.batch_alter_table('model') as batch_op:
+        batch_op.drop_column('tag_id')
 
 
 def downgrade() -> None:
-    op.add_column('model', sa.Column('tag_id', sa.Integer(), nullable=True))
+    with op.batch_alter_table('model') as batch_op:
+        batch_op.add_column(sa.Column('tag_id', sa.Integer(), nullable=True))
+    op.alter_column('order_header', 'total_price',
+        type_=sa.Float(), existing_nullable=False)
+    op.alter_column('order_header', 'extra_fee',
+        type_=sa.Float(), existing_nullable=True)
+    op.alter_column('order_header', 'shipping_price',
+        type_=sa.Float(), existing_nullable=False)
+    op.alter_column('order_detail', 'unit_price',
+        type_=sa.Float(), existing_nullable=True)
+    op.alter_column('filament', 'filament_price',
+        type_=sa.Float(), existing_nullable=False)
     op.drop_table('model_tag')
