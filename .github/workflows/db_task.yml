@@ -1,10 +1,12 @@
 name: Trigger unittest
+
 env:
   PYTHONPATH: .
   DB_URL: mysql+mysqldb://testuser:testpass@127.0.0.1:3306/test_db
   JWT_SECRET: test-secret-key
   STRIPE_SECRET_KEY: sk_test_dummy
   FLASK_ENV: development
+
 on:
   push:
     branches:
@@ -66,6 +68,7 @@ jobs:
             echo "Waiting for MySQL..."
             sleep 2
           done
+
           mysql -h 127.0.0.1 -P 3306 -u root -proot <<EOF
           CREATE USER IF NOT EXISTS 'testuser'@'%' IDENTIFIED BY 'testpass';
           GRANT ALL PRIVILEGES ON test_db.* TO 'testuser'@'%';
