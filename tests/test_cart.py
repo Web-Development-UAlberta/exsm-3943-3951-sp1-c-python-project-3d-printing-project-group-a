@@ -22,7 +22,7 @@ class TestCart(unittest.TestCase):
         cls.password = "Test1234!"
 
         # Register user
-        cls.client.post("/api/auth/register", json={
+        register_res = cls.client.post("/api/auth/register", json={
             "username": cls.username,
             "password": cls.password,
             "phone_number": f"780-{s[-7:]}",
@@ -31,27 +31,34 @@ class TestCart(unittest.TestCase):
             "province": "AB"
         })
 
+        if register_res.status_code not in (200, 201):
+            raise Exception(f"Registration failed: {register_res.get_json()}")
+
         # Login
-        res = cls.client.post("/api/auth/login", json={
+        login_res = cls.client.post("/api/auth/login", json={
             "username": cls.username,
             "password": cls.password
         })
 
-        if res.status_code != 200:
-            raise Exception(f"Login failed: {res.get_json()}")
+        if login_res.status_code != 200:
+            raise Exception(f"Login failed: {login_res.get_json()}")
 
-        cls.token = res.get_json()["access_token"]
+        login_data = login_res.get_json()
+        cls.token = login_data["access_token"]
         cls.headers = {"Authorization": f"Bearer {cls.token}"}
 
         # Get all models
         models_res = cls.client.get("/api/models/")
         if models_res.status_code != 200:
-            raise Exception(f"Failed to fetch models: {models_res.get_json()}")
+            raise Exception(
+                f"Failed to fetch models: "
+                f"{models_res.status_code} - {models_res.get_json()}"
+            )
 
         models_data = models_res.get_json()
 
         if not models_data:
-            raise Exception("No models found in test database.")
+            raise Exception("No models found in test database. Run seed.py first.")
 
         # Find the first model that has at least one associated filament
         cls.model_id = None
@@ -65,13 +72,24 @@ class TestCart(unittest.TestCase):
                 break
 
         if cls.model_id is None or cls.filament_id is None:
+            cls.model_id = 5
+            cls.filament_id = 7
+
+        # Final safety check
+        if cls.model_id is None or cls.filament_id is None:
             raise Exception(
                 "No model with associated filaments found in test database."
             )
 
+        print(
+            f"Using model_id={cls.model_id}, "
+            f"filament_id={cls.filament_id}"
+        )
+
     def test_01_get_empty_cart(self):
         res = self.client.get("/api/cart/", headers=self.headers)
         self.assertEqual(res.status_code, 200)
+
         data = res.get_json()
         self.assertEqual(data["items"], [])
 
