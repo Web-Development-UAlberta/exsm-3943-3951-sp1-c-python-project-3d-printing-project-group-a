@@ -20,4 +20,10 @@ def create_app():
     from .routes.models_routes import models_bp
     app.register_blueprint(models_bp, url_prefix="/api/models")
 
+    from .routes.cart import cart_bp
+    app.register_blueprint(cart_bp, url_prefix="/api/cart")
+
+    from .routes.orders import orders_bp
+    app.register_blueprint(orders_bp, url_prefix="/api/orders")
+
     return app

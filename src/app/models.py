@@ -148,7 +148,7 @@ class OrderHeader(Base):
     total_price = Column(DECIMAL(10, 2), nullable=False)
     order_tracking_number = Column(String(200), unique=True)
 
-    order_status = Column(Enum("Pending", "Printing", "Shipped", "Completed"), nullable=False)
+    order_status = Column(Enum("Cart", "Pending", "Printing", "Shipped", "Completed", "Cancelled"), nullable=False)
 
     stripe_payment_id = Column(String(500))
     payment_date = Column(Date)

@@ -12,11 +12,11 @@ def get_low_stock_filaments(db, Filament):
     all_filaments = db.query(Filament).all()
     return [
         {
-            "filament_id":       f.filament_id,
-            "material_name":     f.material_name,
-            "color_hex":         f.color_hex,
+            "filament_id": f.filament_id,
+            "material_name": f.material_name,
+            "color_hex": f.color_hex,
             "quantity_in_stock": f.quantity_in_stock,
-            "status":            "LOW STOCK"
+            "status": "LOW STOCK"
         }
         for f in all_filaments
         if is_low_stock(f.quantity_in_stock)
