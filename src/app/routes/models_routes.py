@@ -6,45 +6,49 @@ from ..services.pricing import calculate_quote
 models_bp = Blueprint("models", __name__)
 
 @models_bp.route("/", methods=["GET"])
-
 def get_models():
     tag_id = request.args.get("tag_id")
-    material = request.args.get("material")
-    sort = request.args.get("sort")
 
     try:
         with get_db() as db:
             query = db.query(Model)
+
             if tag_id:
                 query = query.join(ModelTag).filter(ModelTag.tag_id == tag_id)
+
             models = query.all()
+
             result = []
             for m in models:
+                # FORCE LOAD relationships safely
+                filaments = [
+                    link.filament
+                    for link in m.filament_links
+                    if link.filament is not None
+                ]
+
                 tags = [
                     {"tag_id": link.tag.tag_id, "tag_name": link.tag.tag_name}
                     for link in m.tag_links
+                    if link.tag is not None
                 ]
-                filaments = [
-                    {
-                        "filament_id": link.filament.filament_id,
-                        "material_name": link.filament.material_name,
-                        "color_hex": link.filament.color_hex,
-                        "filament_price": float(link.filament.filament_price)
-                    }
-                    for link in m.filament_links
-                ]
+
                 result.append({
                     "model_id": m.model_id,
                     "model_name": m.model_name,
-                    "model_description": m.model_description,
-                    "model_length": m.model_length,
-                    "model_width": m.model_width,
-                    "model_height": m.model_height,
                     "tags": tags,
-                    "filaments": filaments
+                    "filaments": [
+                        {
+                            "filament_id": f.filament_id,
+                            "material_name": f.material_name,
+                            "color_hex": f.color_hex
+                        }
+                        for f in filaments
+                    ]
                 })
+
             return jsonify(result), 200
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
