@@ -54,7 +54,7 @@ Main/
 ├── node_modules/           # Directory for Node.js external libraries and dependencies
 │
 ├── printshop-frontend/     # Directory for frontend code
-│   ├── __tests__/          # Directory for backend tests
+│   ├── __tests__/          # Directory for frontend tests
 │   ├── app/                # Next.js pages
 │   ├── jest.config.js      # Jest configuration
 │   ├── jest.setup.js       # Jest setup file
@@ -211,6 +211,7 @@ stripe listen --forward-to localhost:8000/api/payments/webhook/
 ```
 npm ci
 npm install --save-dev jest jest-environment-jsdom @testing-library/react @testing-library/jest-dom @testing-library/dom
+npm test
 ```
 
 
