@@ -13,14 +13,21 @@ def seed():
     with get_db() as db:
         try:
 
-            db.query(ModelFilament).delete()
-            db.query(ModelTag).delete()
-            db.query(Model).delete()
-            db.query(Printer).delete()
-            db.query(PrinterType).delete()
-            db.query(Filament).delete()
-            db.query(Tag).delete()
-            db.commit()
+            def clear_db(db):
+                # child tables FIRST
+                db.query(ModelFilament).delete()
+                db.query(ModelTag).delete()
+                db.query(Model).delete()
+
+                # IMPORTANT: if order_detail exists
+                db.query("DELETE FROM order_detail")
+
+                db.query(Printer).delete()
+                db.query(PrinterType).delete()
+                db.query(Filament).delete()
+                db.query(Tag).delete()
+
+                db.commit()
 
             pla_black = Filament("PLA", "#000000", 820, "Hatchbox", 25.00, "Matte")
             pla_white = Filament("PLA", "#FFFFFF", 140, "Hatchbox", 25.00, "Matte")
