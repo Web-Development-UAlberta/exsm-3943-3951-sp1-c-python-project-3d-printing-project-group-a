@@ -16,19 +16,22 @@ class TestCart(unittest.TestCase):
         cls.app.config["TESTING"] = True
         cls.client = cls.app.test_client()
 
+        # Create a unique test user
         s = str(int(time.time()))
         cls.username = f"cart_{s}"
         cls.password = "Test1234!"
 
+        # Register user
         cls.client.post("/api/auth/register", json={
             "username": cls.username,
             "password": cls.password,
-            "phone_number":  f"780-{s[-7:]}",
+            "phone_number": f"780-{s[-7:]}",
             "city": "Edmonton",
             "street_address": "123 Main St",
             "province": "AB"
         })
 
+        # Login
         res = cls.client.post("/api/auth/login", json={
             "username": cls.username,
             "password": cls.password
@@ -37,16 +40,34 @@ class TestCart(unittest.TestCase):
         if res.status_code != 200:
             raise Exception(f"Login failed: {res.get_json()}")
 
-        cls.token   = res.get_json()["access_token"]
+        cls.token = res.get_json()["access_token"]
         cls.headers = {"Authorization": f"Bearer {cls.token}"}
 
+        # Get all models
         models_res = cls.client.get("/api/models/")
-        if models_res.status_code != 200 or not models_res.get_json():
-            raise Exception("No models found — run seed.py first")
+        if models_res.status_code != 200:
+            raise Exception(f"Failed to fetch models: {models_res.get_json()}")
 
         models_data = models_res.get_json()
-        cls.model_id = models_data[0]["model_id"]
-        cls.filament_id = models_data[0]["filaments"][0]["filament_id"]
+
+        if not models_data:
+            raise Exception("No models found in test database.")
+
+        # Find the first model that has at least one associated filament
+        cls.model_id = None
+        cls.filament_id = None
+
+        for model in models_data:
+            filaments = model.get("filaments", [])
+            if filaments and len(filaments) > 0:
+                cls.model_id = model["model_id"]
+                cls.filament_id = filaments[0]["filament_id"]
+                break
+
+        if cls.model_id is None or cls.filament_id is None:
+            raise Exception(
+                "No model with associated filaments found in test database."
+            )
 
     def test_01_get_empty_cart(self):
         res = self.client.get("/api/cart/", headers=self.headers)
@@ -106,15 +127,20 @@ class TestCart(unittest.TestCase):
             "color_count": 2,
             "quantity": 1
         })
+
         self.assertEqual(res.status_code, 201)
+
         data = res.get_json()
         self.assertIn("items", data)
         self.assertEqual(len(data["items"]), 1)
+
+        # Save detail_id for later tests
         self.__class__.detail_id = data["items"][0]["order_detail_id"]
 
     def test_08_get_cart_with_item(self):
         res = self.client.get("/api/cart/", headers=self.headers)
         self.assertEqual(res.status_code, 200)
+
         data = res.get_json()
         self.assertGreater(len(data["items"]), 0)
         self.assertGreater(data["total_price"], 0)
@@ -128,16 +154,24 @@ class TestCart(unittest.TestCase):
             "color_count": 2,
             "quantity": 1
         })
+
         self.assertEqual(res.status_code, 201)
+
         data = res.get_json()
         self.assertEqual(len(data["items"]), 1)
         self.assertEqual(data["items"][0]["order_quantity"], 2)
 
     def test_10_remove_item_from_cart(self):
         detail_id = getattr(self.__class__, "detail_id", None)
+
         if not detail_id:
             self.skipTest("No detail_id from previous test")
-        res = self.client.delete(f"/api/cart/{detail_id}", headers=self.headers)
+
+        res = self.client.delete(
+            f"/api/cart/{detail_id}",
+            headers=self.headers
+        )
+
         self.assertEqual(res.status_code, 200)
 
     def test_11_remove_nonexistent_item(self):
@@ -145,7 +179,7 @@ class TestCart(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
 
     def test_12_clear_cart(self):
-        # add fresh item first
+        # Add a fresh item first
         self.client.post("/api/cart/", headers=self.headers, json={
             "model_id": self.model_id,
             "filament_id": self.filament_id,
@@ -154,13 +188,16 @@ class TestCart(unittest.TestCase):
             "color_count": 1,
             "quantity": 1
         })
+
         res = self.client.delete("/api/cart/", headers=self.headers)
+
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.get_json()["message"], "Cart cleared")
 
     def test_13_cart_empty_after_clear(self):
         res = self.client.get("/api/cart/", headers=self.headers)
         self.assertEqual(res.status_code, 200)
+
         data = res.get_json()
         self.assertEqual(data["items"], [])
 
