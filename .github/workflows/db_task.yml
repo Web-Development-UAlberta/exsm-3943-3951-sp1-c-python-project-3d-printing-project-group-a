@@ -77,6 +77,11 @@ jobs:
           cd src
           alembic upgrade head
 
+      - name: Seed database
+        run: |
+          cd src
+          python seed.py
+
       - name: Run backend tests
         run: python -m unittest discover -s tests -v
 

@@ -3,12 +3,12 @@ from decimal import Decimal, ROUND_HALF_UP
 
 def calculate_quote(length, width, height, scale, infill_percent, filament_price, color_count, print_time_hours):
 
-    length           = Decimal(str(length))
-    width            = Decimal(str(width))
-    height           = Decimal(str(height))
-    scale_factor     = Decimal(str(scale)) / Decimal("100")
-    infill_factor    = Decimal(str(infill_percent)) / Decimal("100")
-    filament_price   = Decimal(str(filament_price))
+    length = Decimal(str(length))
+    width = Decimal(str(width))
+    height = Decimal(str(height))
+    scale_factor = Decimal(str(scale)) / Decimal("100")
+    infill_factor = Decimal(str(infill_percent)) / Decimal("100")
+    filament_price = Decimal(str(filament_price))
     print_time_hours = Decimal(str(print_time_hours))
 
     # base volume in mm³
