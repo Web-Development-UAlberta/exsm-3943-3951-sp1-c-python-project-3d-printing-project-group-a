@@ -42,6 +42,24 @@ def seed():
                 finish_filament="Matte"
             )
 
+            petg_black = Filament(
+                material_name="PETG",
+                color_hex="#000000",
+                quantity_in_stock=510,
+                manufacturer="Prusament",
+                filament_price=32.00,
+                finish_filament="Satin"
+            )
+
+            petg_white = Filament(
+                material_name="PETG",
+                color_hex="#FFFFFF",
+                quantity_in_stock=510,
+                manufacturer="Prusament",
+                filament_price=32.00,
+                finish_filament="Satin"
+            )
+
             petg_blue = Filament(
                 material_name="PETG",
                 color_hex="#0000FF",
@@ -51,13 +69,58 @@ def seed():
                 finish_filament="Glossy"
             )
 
+            petg_red = Filament(
+                material_name="PETG",
+                color_hex="#FF0000",
+                quantity_in_stock=510,
+                manufacturer="Prusament",
+                filament_price=32.00,
+                finish_filament="Silk"
+            )
+
+            abs_black = Filament(
+                material_name="ABS",
+                color_hex="#000000",
+                quantity_in_stock=670,
+                manufacturer="eSUN",
+                filament_price=28.00,
+                finish_filament="Silk"
+            )
+
+            abs_white = Filament(
+                material_name="ABS",
+                color_hex="#FFFFFF",
+                quantity_in_stock=670,
+                manufacturer="eSUN",
+                filament_price=28.00,
+                finish_filament="Silk"
+            )
+
             abs_grey = Filament(
                 material_name="ABS",
                 color_hex="#808080",
                 quantity_in_stock=670,
                 manufacturer="eSUN",
                 filament_price=28.00,
-                finish_filament="Matte"
+                finish_filament="Satin"
+            )
+
+            tpu_black = Filament(
+                material_name="TPU",
+                color_hex="#000000",
+                quantity_in_stock=90,
+                manufacturer="NinjaTek",
+                filament_price=38.00,
+                finish_filament="Glossy"
+            )
+
+            tpu_white = Filament(
+                material_name="TPU",
+                color_hex="#FFFFFF",
+                quantity_in_stock=90,
+                manufacturer="NinjaTek",
+                filament_price=38.00,
+                finish_filament="Glossy"
             )
 
             tpu_red = Filament(
@@ -69,43 +132,97 @@ def seed():
                 finish_filament="Flexible"
             )
 
-            db.add_all([pla_black, pla_white, petg_blue, abs_grey, tpu_red])
+            db.add_all([pla_black, pla_white, petg_black, petg_white, petg_blue, petg_red, abs_black, abs_white, abs_grey, tpu_black, tpu_white, tpu_red])
             db.flush()
 
-            prusa_type = PrinterType(
+            prusa_type1 = PrinterType(
                 printer_name="Prusa MK4",
                 max_size=500.0
             )
 
-            db.add(prusa_type)
+            prusa_type2 = PrinterType(
+                printer_name="Prusa MK4",
+                max_size=500.0
+            )
+
+            prusa_type3 = PrinterType(
+                printer_name="Prusa MK4",
+                max_size=500.0
+            )
+
+            db.add_all([prusa_type1, prusa_type2, prusa_type3])
             db.flush()
 
-
             printer1 = Printer(
-                printer_type_id=prusa_type.printer_type_id,
-                filament_id=pla_black.filament_id
+                filament_id=pla_black.filament_id,
+                printer_type_id=prusa_type1.printer_type_id
             )
 
             printer2 = Printer(
-                printer_type_id=prusa_type.printer_type_id,
-                filament_id=petg_blue.filament_id
+                filament_id=pla_white.filament_id,
+                printer_type_id=prusa_type1.printer_type_id
             )
 
             printer3 = Printer(
-                printer_type_id=prusa_type.printer_type_id,
-                filament_id=abs_grey.filament_id
+                filament_id=petg_black.filament_id,
+                printer_type_id=prusa_type1.printer_type_id
             )
 
-            db.add_all([printer1, printer2, printer3])
+            printer4 = Printer(
+                filament_id=petg_white.filament_id,
+                printer_type_id=prusa_type1.printer_type_id
+            )
+
+            printer5 = Printer(
+                filament_id=petg_blue.filament_id,
+                printer_type_id=prusa_type1.printer_type_id
+            )
+
+            printer6 = Printer(
+                filament_id=petg_red.filament_id,
+                printer_type_id=prusa_type1.printer_type_id
+            )
+
+            printer7 = Printer(
+                filament_id=abs_black.filament_id,
+                printer_type_id=prusa_type2.printer_type_id
+            )
+
+            printer8 = Printer(
+                filament_id=abs_white.filament_id,
+                printer_type_id=prusa_type2.printer_type_id
+            )
+
+            printer9 = Printer(
+                filament_id=abs_grey.filament_id,
+                printer_type_id=prusa_type2.printer_type_id
+            )
+
+            printer10 = Printer(
+                filament_id=tpu_black.filament_id,
+                printer_type_id=prusa_type3.printer_type_id
+            )
+
+            printer11 = Printer(
+                filament_id=tpu_white.filament_id,
+                printer_type_id=prusa_type3.printer_type_id
+            )
+
+            printer12 = Printer(
+                filament_id=tpu_red.filament_id,
+                printer_type_id=prusa_type3.printer_type_id
+            )
+
+            db.add_all([printer1, printer2, printer3, printer4, printer5, printer6, printer7, printer8, printer9, printer10, printer11, printer12])
             db.flush()
 
             tags = {
-                "decor": Tag(tag_name="Decorations"),
                 "gaming": Tag(tag_name="Gaming"),
-                "collectibles": Tag(tag_name="Collectibles"),
                 "utilities": Tag(tag_name="Utilities"),
-                "props": Tag(tag_name="Props"),
+                "collectibles": Tag(tag_name="Collectibles"),
+                "decor": Tag(tag_name="Decorations"),
                 "edu": Tag(tag_name="Education"),
+                "props": Tag(tag_name="Props"),
             }
 
             db.add_all(tags.values())
@@ -122,12 +239,32 @@ def seed():
                 printer_id=printer1.printer_id
             )
 
+            tree_ornament = Model(
+                model_name="Christmas Ornament",
+                model_length=120,
+                model_width=80,
+                model_height=95,
+                model_description="Tree ornament.",
+                print_time_hours=8.0,
+                printer_id=printer1.printer_id
+            )
+
             d20_dice = Model(
                 model_name="D20 Dice",
                 model_length=50,
                 model_width=50,
                 model_height=50,
                 model_description="Classic dice.",
+                print_time_hours=3.5,
+                printer_id=printer1.printer_id
+            )
+
+            chess_queen = Model(
+                model_name="Chess Queen",
+                model_length=50,
+                model_width=50,
+                model_height=50,
+                model_description="Chess piece.",
                 print_time_hours=3.5,
                 printer_id=printer1.printer_id
             )
@@ -139,7 +276,17 @@ def seed():
                 model_height=200,
                 model_description="Bust model.",
                 print_time_hours=18.0,
-                printer_id=printer2.printer_id
+                printer_id=printer1.printer_id
+            )
+
+            bat_man = Model(
+                model_name="Batman Man Bust",
+                model_length=150,
+                model_width=120,
+                model_height=200,
+                model_description="Bust model.",
+                print_time_hours=18.0,
+                printer_id=printer1.printer_id
             )
 
             cable_clip = Model(
@@ -152,6 +299,16 @@ def seed():
                 printer_id=printer1.printer_id
             )
 
+            tool_hammer = Model(
+                model_name="Hammer",
+                model_length=30,
+                model_width=20,
+                model_height=15,
+                model_description="Impact tool.",
+                print_time_hours=1.0,
+                printer_id=printer1.printer_id
+            )
+
             helmet_prop = Model(
                 model_name="Helmet Prop",
                 model_length=300,
@@ -159,7 +316,17 @@ def seed():
                 model_height=280,
                 model_description="Helmet prop.",
                 print_time_hours=24.0,
-                printer_id=printer3.printer_id
+                printer_id=printer2.printer_id
+            )
+
+            pylon_prop = Model(
+                model_name="Helmet Prop",
+                model_length=300,
+                model_width=250,
+                model_height=280,
+                model_description="Traffic cone prop.",
+                print_time_hours=24.0,
+                printer_id=printer2.printer_id
             )
 
             dna_model = Model(
@@ -169,41 +336,103 @@ def seed():
                 model_height=200,
                 model_description="DNA helix.",
                 print_time_hours=6.0,
-                printer_id=printer2.printer_id
+                printer_id=printer3.printer_id
             )
 
-            db.add_all([desk_vase, d20_dice, iron_man, cable_clip, helmet_prop, dna_model])
+            globe_earth = Model(
+                model_name="Earth Model",
+                model_length=80,
+                model_width=80,
+                model_height=200,
+                model_description="World globe.",
+                print_time_hours=6.0,
+                printer_id=printer3.printer_id
+            )
+
+            db.add_all([desk_vase, tree_ornament, d20_dice, chess_queen, iron_man, bat_man, cable_clip, tool_hammer, helmet_prop, pylon_prop, dna_model, globe_earth])
             db.flush()
 
 
             db.add_all([
                 ModelTag(model_id=desk_vase.model_id, tag_id=tags["decor"].tag_id),
+                ModelTag(model_id=tree_ornament.model_id, tag_id=tags["decor"].tag_id),
                 ModelTag(model_id=d20_dice.model_id, tag_id=tags["gaming"].tag_id),
+                ModelTag(model_id=chess_queen.model_id, tag_id=tags["gaming"].tag_id),
                 ModelTag(model_id=iron_man.model_id, tag_id=tags["collectibles"].tag_id),
+                ModelTag(model_id=bat_man.model_id, tag_id=tags["collectibles"].tag_id),
                 ModelTag(model_id=cable_clip.model_id, tag_id=tags["utilities"].tag_id),
+                ModelTag(model_id=tool_hammer.model_id, tag_id=tags["utilities"].tag_id),
                 ModelTag(model_id=helmet_prop.model_id, tag_id=tags["props"].tag_id),
+                ModelTag(model_id=pylon_prop.model_id, tag_id=tags["props"].tag_id),
                 ModelTag(model_id=dna_model.model_id, tag_id=tags["edu"].tag_id),
+                ModelTag(model_id=globe_earth.model_id, tag_id=tags["edu"].tag_id),
             ])
 
 
             db.add_all([
                 ModelFilament(model_id=desk_vase.model_id, filament_id=pla_black.filament_id),
                 ModelFilament(model_id=desk_vase.model_id, filament_id=pla_white.filament_id),
+                ModelFilament(model_id=desk_vase.model_id, filament_id=petg_black.filament_id),
+                ModelFilament(model_id=desk_vase.model_id, filament_id=petg_white.filament_id),
+                ModelFilament(model_id=desk_vase.model_id, filament_id=petg_blue.filament_id),
+                ModelFilament(model_id=desk_vase.model_id, filament_id=petg_red.filament_id),
+
+                ModelFilament(model_id=tree_ornament.model_id, filament_id=pla_black.filament_id),
+                ModelFilament(model_id=tree_ornament.model_id, filament_id=pla_white.filament_id),
+                ModelFilament(model_id=tree_ornament.model_id, filament_id=petg_blue.filament_id),
+                ModelFilament(model_id=tree_ornament.model_id, filament_id=petg_red.filament_id),
 
                 ModelFilament(model_id=d20_dice.model_id, filament_id=pla_black.filament_id),
+                ModelFilament(model_id=d20_dice.model_id, filament_id=pla_white.filament_id),
+                ModelFilament(model_id=d20_dice.model_id, filament_id=petg_black.filament_id),
+                ModelFilament(model_id=d20_dice.model_id, filament_id=petg_white.filament_id),
                 ModelFilament(model_id=d20_dice.model_id, filament_id=petg_blue.filament_id),
+                ModelFilament(model_id=d20_dice.model_id, filament_id=petg_red.filament_id),
 
-                ModelFilament(model_id=iron_man.model_id, filament_id=abs_grey.filament_id),
+                ModelFilament(model_id=chess_queen.model_id, filament_id=pla_black.filament_id),
+                ModelFilament(model_id=chess_queen.model_id, filament_id=pla_white.filament_id),
+                ModelFilament(model_id=chess_queen.model_id, filament_id=petg_blue.filament_id),
+                ModelFilament(model_id=chess_queen.model_id, filament_id=petg_red.filament_id),
+
                 ModelFilament(model_id=iron_man.model_id, filament_id=pla_black.filament_id),
+                ModelFilament(model_id=iron_man.model_id, filament_id=pla_white.filament_id),
+                ModelFilament(model_id=iron_man.model_id, filament_id=petg_black.filament_id),
+                ModelFilament(model_id=iron_man.model_id, filament_id=petg_white.filament_id),
+                ModelFilament(model_id=iron_man.model_id, filament_id=petg_blue.filament_id),
+                ModelFilament(model_id=iron_man.model_id, filament_id=petg_red.filament_id),
+
+                ModelFilament(model_id=bat_man.model_id, filament_id=pla_black.filament_id),
+                ModelFilament(model_id=bat_man.model_id, filament_id=pla_white.filament_id),
+                ModelFilament(model_id=bat_man.model_id, filament_id=petg_black.filament_id),
+                ModelFilament(model_id=bat_man.model_id, filament_id=petg_white.filament_id),
 
                 ModelFilament(model_id=cable_clip.model_id, filament_id=pla_black.filament_id),
                 ModelFilament(model_id=cable_clip.model_id, filament_id=pla_white.filament_id),
+                ModelFilament(model_id=cable_clip.model_id, filament_id=petg_black.filament_id),
+                ModelFilament(model_id=cable_clip.model_id, filament_id=petg_white.filament_id),
+                ModelFilament(model_id=cable_clip.model_id, filament_id=petg_blue.filament_id),
+                ModelFilament(model_id=cable_clip.model_id, filament_id=petg_red.filament_id),
 
+                ModelFilament(model_id=tool_hammer.model_id, filament_id=pla_black.filament_id),
+                ModelFilament(model_id=tool_hammer.model_id, filament_id=pla_white.filament_id),
+                ModelFilament(model_id=tool_hammer.model_id, filament_id=petg_black.filament_id),
+                ModelFilament(model_id=tool_hammer.model_id, filament_id=petg_white.filament_id),
+
+                ModelFilament(model_id=helmet_prop.model_id, filament_id=abs_black.filament_id),
+                ModelFilament(model_id=helmet_prop.model_id, filament_id=abs_white.filament_id),
                 ModelFilament(model_id=helmet_prop.model_id, filament_id=abs_grey.filament_id),
-                ModelFilament(model_id=helmet_prop.model_id, filament_id=tpu_red.filament_id),
 
-                ModelFilament(model_id=dna_model.model_id, filament_id=pla_white.filament_id),
-                ModelFilament(model_id=dna_model.model_id, filament_id=petg_blue.filament_id),
+                ModelFilament(model_id=pylon_prop.model_id, filament_id=abs_black.filament_id),
+                ModelFilament(model_id=pylon_prop.model_id, filament_id=abs_white.filament_id),
+                ModelFilament(model_id=pylon_prop.model_id, filament_id=abs_grey.filament_id),
+
+                ModelFilament(model_id=dna_model.model_id, filament_id=tpu_black.filament_id),
+                ModelFilament(model_id=dna_model.model_id, filament_id=tpu_white.filament_id),
+                ModelFilament(model_id=dna_model.model_id, filament_id=tpu_red.filament_id),
+
+                ModelFilament(model_id=globe_earth.model_id, filament_id=tpu_black.filament_id),
+                ModelFilament(model_id=globe_earth.model_id, filament_id=tpu_white.filament_id),
+                ModelFilament(model_id=globe_earth.model_id, filament_id=tpu_red.filament_id),
             ])
 
             db.commit()
