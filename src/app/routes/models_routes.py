@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from ..database import get_db
-from ..models import Model, Filament, Tag, ModelTag
+from ..models import Model, Filament, Tag, ModelTag, ModelFilament
 from ..services.pricing import calculate_quote
 
 models_bp = Blueprint("models", __name__)
@@ -9,15 +9,53 @@ models_bp = Blueprint("models", __name__)
 
 def get_models():
     tag_id = request.args.get("tag_id")
-    material = request.args.get("material")
-    sort = request.args.get("sort")
+    order = request.args.get("order")
+    filament_id = request.args.get("filament_id")
+    search = request.args.get("search")
 
     try:
         with get_db() as db:
             query = db.query(Model)
-            if tag_id:
-                query = query.join(ModelTag).filter(ModelTag.tag_id == tag_id)
-            models = query.all()
+            if search and tag_id and order == "asc" and filament_id:
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).filter(ModelFilament.filament_id == filament_id).filter(Model.model_name.ilike(f'%{search}%')).order_by(Model.model_name.asc())
+            elif search and tag_id and order == "desc" and filament_id:
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).filter(ModelFilament.filament_id == filament_id).filter(Model.model_name.ilike(f'%{search}%')).order_by(Model.model_name.desc())
+            elif search and tag_id and order == 'asc':
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).filter(Model.model_name.ilike(f'%{search}%')).order_by(Model.model_name.asc()).all()
+            elif search and tag_id and order == 'desc':
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).filter(Model.model_name.ilike(f'%{search}%')).order_by(Model.model_name.desc()).all()
+            elif search and tag_id and filament_id:
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).filter(ModelFilament.filament_id == filament_id).filter(Model.model_name.ilike(f'%{search}%'))
+            elif search and order == 'asc':
+                models = query.filter(Model.model_name.ilike(f'%{search}%')).order_by(Model.model_name.asc()).all()
+            elif search and order == 'desc':
+                models = query.filter(Model.model_name.ilike(f'%{search}%')).order_by(Model.model_name.desc()).all()
+            elif search and tag_id:
+                models = query.join(ModelTag).filter(ModelTag.tag_id == tag_id).filter(Model.model_name.ilike(f'%{search}%'))
+            elif search and filament_id:
+                models = query.join(ModelFilament).filter(ModelFilament.filament_id == filament_id).filter(Model.model_name.ilike(f'%{search}%'))
+            elif tag_id and order == "asc" and filament_id:
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).filter(ModelFilament.filament_id == filament_id).order_by(Model.model_name.asc())
+            elif tag_id and order == "desc" and filament_id:
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).filter(ModelFilament.filament_id == filament_id).order_by(Model.model_name.desc())
+            elif tag_id and order == 'asc':
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).order_by(Model.model_name.asc()).all()
+            elif tag_id and order == 'desc':
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).order_by(Model.model_name.desc()).all()
+            elif tag_id and filament_id:
+                models = query.join(ModelTag).join(ModelFilament).filter(ModelTag.tag_id == tag_id).filter(ModelFilament.filament_id == filament_id)
+            elif order == 'asc':
+                models = query.order_by(Model.model_name.asc()).all()
+            elif order == 'desc':
+                models = query.order_by(Model.model_name.desc()).all()
+            elif tag_id:
+                models = query.join(ModelTag).filter(ModelTag.tag_id == tag_id)
+            elif filament_id:
+                models = query.join(ModelFilament).filter(ModelFilament.filament_id == filament_id)
+            elif search:
+                models = query.filter(Model.model_name.ilike(f'%{search}%')).all()
+            else:
+                models = query.all()
             result = []
             for m in models:
                 tags = [
