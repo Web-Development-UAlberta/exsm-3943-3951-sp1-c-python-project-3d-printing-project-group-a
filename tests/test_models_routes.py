@@ -26,7 +26,7 @@ class TestModelsRoutes(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
 
     def test_get_model_filter_tag_found(self):
-        res = self.client.get("/api/models/?tag_id=1")
+        res = self.client.get("/api/models/?tag_id=2")
         self.assertEqual(res.status_code, 200)
         self.assertIsInstance(res.get_json(), list)
         self.assertGreater(len(res.get_json()), 0)
@@ -41,7 +41,7 @@ class TestModelsRoutes(unittest.TestCase):
         self.assertEqual(len(res.get_json()), 0)
 
     def test_get_model_filter_filament_found(self):
-        res = self.client.get("/api/models/?filament_id=1")
+        res = self.client.get("/api/models/?filament_id=2")
         self.assertEqual(res.status_code, 200)
         self.assertIsInstance(res.get_json(), list)
         self.assertGreater(len(res.get_json()), 0)
@@ -71,12 +71,12 @@ class TestModelsRoutes(unittest.TestCase):
         self.assertGreater(json_first_record, json_second_record)
 
     def test_get_model_search(self):
-        res = self.client.get("/api/models/?search=airplane")
+        res = self.client.get("/api/models/?search=hammer")
         self.assertEqual(res.status_code, 200)
         self.assertIsInstance(res.get_json(), list)
         json_list = res.get_json()[:1]
         json_first_record = json_list[0]['model_name']
-        self.assertEqual(json_first_record.lower(), 'Airplane'.lower())
+        self.assertEqual(json_first_record.lower(), 'Hammer'.lower())
 
     def test_get_model_search_order_asc(self):
         res = self.client.get("/api/models/?search=man&order=asc")
