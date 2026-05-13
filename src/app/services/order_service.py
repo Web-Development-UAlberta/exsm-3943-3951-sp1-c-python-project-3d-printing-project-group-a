@@ -12,7 +12,7 @@ def get_or_create_cart(db, user_id):
         cart = OrderHeader(
             user_id=user_id,
             order_date=date.today(),
-            order_status="Cart",
+            order_status="Pending",
             shipping_price=10.00,
             total_price=0.00,
             payment_status="Pending"
@@ -115,7 +115,7 @@ def remove_item_from_cart(db, user_id, order_detail_id):
 def clear_cart(db, user_id):
     cart = db.query(OrderHeader).filter_by(
         user_id=user_id,
-        order_status="Cart"
+        order_status="Pending"
     ).first()
     if not cart:
         raise ValueError("No active cart found")
