@@ -127,7 +127,7 @@ class TestAdmin(unittest.TestCase):
 
     def test_11_add_printer(self):
         res = self.client.post("/api/admin/printers", headers=self.admin_headers, json={
-            "printer_type_id": 7
+            "printer_type_id": 2
         })
         self.assertEqual(res.status_code, 201)
         self.__class__.printer_id = res.get_json()["printer_id"]
@@ -150,7 +150,7 @@ class TestAdmin(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
 
     def test_15_update_order_invalid_status(self):
-        res = self.client.put("/api/admin/orders/1", headers=self.admin_headers, json={"order_status": "InvalidStatus"})
+        res = self.client.put("/api/admin/orders/3", headers=self.admin_headers, json={"order_status": "InvalidStatus"})
         self.assertEqual(res.status_code, 400)
 
     # models

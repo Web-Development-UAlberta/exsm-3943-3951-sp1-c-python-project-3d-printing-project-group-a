@@ -18,7 +18,7 @@ The 3D Printing Online Store functions through Python. This README gives Users e
 |Frontend|Next.js 16.2.4|Storefront, Admin UI|
 |Frontend|HTML5|Storefront, UI Design|
 |Frontend|Tailwind CSS|Storefront, Styling|
-|Backend|Python 3.14|Backend, Functions|
+|Backend|Python 3.10|Backend, Functions|
 |Database|MariaDB|Inventory Management|
 |Testing|Python Unittest|Backend Testing|
 |Testing|Jest|Frontend Testing|
@@ -131,28 +131,27 @@ pip install mysqlclient
 ```
 
 ### **7. Run database migrations**
-* Run the following command in MariaDB
+* Run the following command in MariaDB to create a database
 ```
 CREATE DATABASE 3d_printing_project
 ```
-* In the "src" directory, open "models.py" file
-* Update the following line
+* Run the following command in Terminal to copy env.example template
 ```
-mysql+mysqldb://{your root}:{your password}@localhost:3306/3d_printing_project'
+cp .env.example .env
 ```
-* Run the following commands in Terminal
+* Open the ".env" file from main directory
+* Update the following lines with your MariaDB Password
 ```
-pip install alembic
-alembic init alembic
+DB_URL=mysql+mysqldb://root:YOUR_DB_PASSWORD@localhost:3306/3d_printing_project
 ```
-* In the "src" directory, open "alembic.ini" file
-* Change the following line
+* Save the file
+* Run the following commands in Terminal to install dependencies:
 ```
-sqlalchemy.url = mysql+mysqldb://{yor root}:{your password}@localhost:3306/3d_printing_project
+cd src
+pip install -r requirements.txt
 ```
-* Run the following commands in Terminal
+* Run the following commands in Terminal to run database migration
 ```
-alembic revision --autogenerate -m"Initial migration
 alembic upgrade head
 ```
 
