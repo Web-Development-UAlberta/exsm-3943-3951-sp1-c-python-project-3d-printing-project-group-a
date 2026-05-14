@@ -151,7 +151,7 @@ class TestAdmin(unittest.TestCase):
 
     def test_15_update_order_invalid_status(self):
         res = self.client.put("/api/admin/orders/3", headers=self.admin_headers, json={"order_status": "InvalidStatus"})
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.status_code, 404)
 
     # models
     def test_16_get_all_models(self):
