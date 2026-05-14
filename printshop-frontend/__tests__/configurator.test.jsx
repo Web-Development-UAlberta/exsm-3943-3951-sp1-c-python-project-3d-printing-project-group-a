@@ -1,23 +1,13 @@
-import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import "@testing-library/jest-dom";
+import { render, screen } from "@testing-library/react";
+import ConfiguratorPage from "../app/product/[id]/page";
 
-describe('Configurator Page', () => {
-  it('renders the configurator page', () => {
-    render(
-      <div>
-        <h1>Configurator</h1>
-        <p>Model dimensions</p>
-        <input placeholder="e.g. 100" />
-        <button>Add to Cart</button>
-        <p>Live price breakdown</p>
-        <p>Shipping ( Canada Post )</p>
-      </div>
-    )
-    expect(screen.getByText('Configurator')).toBeInTheDocument()
-    expect(screen.getByText('Model dimensions')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('e.g. 100')).toBeInTheDocument()
-    expect(screen.getByText('Add to Cart')).toBeInTheDocument()
-    expect(screen.getByText('Live price breakdown')).toBeInTheDocument()
-    expect(screen.getByText('Shipping ( Canada Post )')).toBeInTheDocument()
-  })
-})
+describe("Configurator Page", () => {
+  it("renders the configurator page", () => {
+    render(<ConfiguratorPage params={{ id: "1" }} />);
+    expect(screen.getByText("Configurator")).toBeInTheDocument();
+    expect(screen.getByText("Custom dimensions")).toBeInTheDocument();
+    expect(screen.getByText("Add to Cart →")).toBeInTheDocument();
+    expect(screen.getByText("Live price breakdown")).toBeInTheDocument();
+  });
+});

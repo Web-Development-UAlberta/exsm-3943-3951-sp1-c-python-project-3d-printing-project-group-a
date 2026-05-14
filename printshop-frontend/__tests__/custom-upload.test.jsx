@@ -1,19 +1,14 @@
-import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import "@testing-library/jest-dom";
+import { render, screen } from "@testing-library/react";
+import CustomUploadPage from "../app/custom/page";
 
-describe('Custom Upload Page', () => {
-  it('renders the custom upload page', () => {
-    render(
-      <div>
-        <h1>Upload Your Custom 3D Model</h1>
-        <p>Accepted: .stl and .3mf</p>
-        <button>Upload file</button>
-        <p>Taken to Configurator page</p>
-      </div>
-    )
-    expect(screen.getByText('Upload Your Custom 3D Model')).toBeInTheDocument()
-    expect(screen.getByText('Accepted: .stl and .3mf')).toBeInTheDocument()
-    expect(screen.getByText('Upload file')).toBeInTheDocument()
-    expect(screen.getByText('Taken to Configurator page')).toBeInTheDocument()
-  })
-})
+describe("Custom Upload Page", () => {
+  it("renders the custom upload page", () => {
+    render(<CustomUploadPage />);
+    expect(
+      screen.getByText(/upload your custom 3d model/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Upload file")).toBeInTheDocument();
+    expect(screen.getByText("Step 1 — Upload")).toBeInTheDocument();
+  });
+});
