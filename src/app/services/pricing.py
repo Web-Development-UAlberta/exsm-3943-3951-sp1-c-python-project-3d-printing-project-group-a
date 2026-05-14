@@ -40,7 +40,7 @@ def calculate_quote(length, width, height, scale, infill_percent, filament_price
     overhead = subtotal * Decimal("1.15")
 
     # multi-color surcharge 5% if 5 or more colors
-    surcharge = overhead * Decimal("0.05") if color_count >= 5 else Decimal("0")
+    surcharge = overhead * Decimal("0.05") if color_count > 1 else Decimal("0")
 
     # 25% profit margin
     pre_margin = overhead + surcharge
