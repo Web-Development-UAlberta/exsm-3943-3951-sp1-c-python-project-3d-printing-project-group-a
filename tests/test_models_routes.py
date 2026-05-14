@@ -346,7 +346,7 @@ class TestModelsRoutes(unittest.TestCase):
         self.assertEqual(res.status_code, 400)
 
     # Validates no surcharge applied for single color printing
-    def test_quote_invalid_infill(self):
+    def test_quote_surcharge_single(self):
         res = self.client.post("/api/models/quote", json={
             "model_id": 2,
             "filament_id": 2,
@@ -360,7 +360,7 @@ class TestModelsRoutes(unittest.TestCase):
         self.assertEqual(json_first_record, 0) 
 
     # Validates surcharge applied for multicolor printing
-    def test_quote_invalid_infill(self):
+    def test_quote_surcharge_multi(self):
         res = self.client.post("/api/models/quote", json={
             "model_id": 2,
             "filament_id": 2,
