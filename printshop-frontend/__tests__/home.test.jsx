@@ -1,10 +1,13 @@
-import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import "@testing-library/jest-dom";
+import { render, screen } from "@testing-library/react";
+import Home from "../app/page";
 
-describe('Home Page', () => {
-  it('renders the page', () => {
-    render(<div><h1>PrintShop</h1></div>)
-    const heading = screen.getByRole('heading', { level: 1 })
-    expect(heading).toBeInTheDocument()
-  })
-})
+describe("Home Page", () => {
+  it("renders the home page", () => {
+    render(<Home />);
+    expect(screen.getByText("Browse by category")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search models...")).toBeInTheDocument();
+    expect(screen.getByText("Model library")).toBeInTheDocument();
+    expect(screen.getByText("Desk Vase")).toBeInTheDocument();
+  });
+});
