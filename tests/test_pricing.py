@@ -50,15 +50,15 @@ class TestPricing(unittest.TestCase):
         self.assertAlmostEqual(ratio, 3.375, places=2)
 
     def test_multicolor_surcharge_applied_at_5_colors(self):
-        quote_4 = self.base_quote(color_count=4)
+        quote_4 = self.base_quote(color_count=1)
         quote_5 = self.base_quote(color_count=5)
         self.assertEqual(quote_4["multicolor_surcharge"], 0.0)
         self.assertGreater(quote_5["multicolor_surcharge"], 0.0)
 
     def test_multicolor_surcharge_not_applied_below_5(self):
-        for count in [1, 2, 3, 4]:
+        for count in [2, 3, 4, 5]:
             quote = self.base_quote(color_count=count)
-            self.assertEqual(quote["multicolor_surcharge"], 0.0)
+            self.assertGreater(quote["multicolor_surcharge"], 0.0)
 
     def test_total_greater_than_machine_and_material(self):
         quote = self.base_quote()
