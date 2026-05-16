@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from ..database import get_db
 from ..models import Model, Filament, Tag, ModelTag, ModelFilament
 from ..services.pricing import calculate_quote
+from werkzeug.utils import secure_filename
+import os
 
 models_bp = Blueprint("models", __name__)
 
@@ -127,6 +129,35 @@ def get_model(model_id):
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@models_bp.route("/upload", methods=["POST"])
+def custom_upload():
+    CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
+    ALLOWED_FILE_EXTENSIONS = {'3tl', '3mf'}
+
+    def extension_check(filename):
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_FILE_EXTENSIONS
+
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file"}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+        if file and extension_check(file.filename):
+            if file:
+                filename = secure_filename(file.filename)
+                if not os.path.exists(CUSTOM_UPLOAD):
+                    os.makedirs(CUSTOM_UPLOAD, exist_ok=True)
+                save_path = os.path.join(CUSTOM_UPLOAD, filename)
+                file.save(save_path)
+                return jsonify({"message": "File uploaded", "filename": file.filename}), 200
+        else:
+            return jsonify({"error": "File extension not supported", "filename": file.filename}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
     
 @models_bp.route("/quote", methods=["POST"])
 def get_quote():
