@@ -9,4 +9,5 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET")
     STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
     DEBUG = os.getenv("FLASK_ENV") == "development"
+    CUSTOM_UPLOAD = os.getenv("CUSTOM_UPLOAD")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
