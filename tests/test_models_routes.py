@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 import json
+import io
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -371,8 +372,36 @@ class TestModelsRoutes(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         json_list = res.get_json()
         json_first_record = json_list['multicolor_surcharge']
-        self.assertGreater(json_first_record, 0) 
-    
+        self.assertGreater(json_first_record, 0)
+
+    # Validates a file upload file is present
+    def test_file_upload_missing_file(self):
+        res = self.client.post("/api/models/upload", data={}, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 400)
+
+    # Validates a file upload filename is not blank
+    def test_file_upload_blank_filename(self):
+        filename = ""
+        file_content = b"Test"
+        data = {'file': (io.BytesIO(file_content), filename)}
+        res = self.client.post("/api/models/upload", data=data, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 400)
+
+    # Validates a file upload is successful
+    def test_file_upload_success(self):
+        file_content = b"3D model of Super Man"
+        filename = "super_man_3d_model.3tl"
+        upload = {'file': (io.BytesIO(file_content), filename)}
+        res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+    # Validates a file upload file extension is valid
+    def test_file_upload_success(self):
+        file_content = b"3D model of Super Man"
+        filename = "super_man_3d_model.jpg"
+        upload = {'file': (io.BytesIO(file_content), filename)}
+        res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
 
 
 if __name__ == "__main__":
