@@ -2,115 +2,44 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { apiGet, apiPut } from "../lib/api";
 
 export default function OrdersPage() {
-  const [selectedOrder, setSelectedOrder] = useState("ORD-002");
+  const [selectedOrder, setSelectedOrder] = useState("");
+  const [orders, setOrders] = useState<any[]>([]);
+  const [orderDetails, setOrderDetails] = useState<Record<string, any>>({});
+  const [loading, setLoading] = useState(true);
 
-  const orders = [
-    {
-      id: "ORD-001",
-      item: "Desk Vase",
-      status: "Printing",
-      total: 85.16,
-      date: "Apr 28",
-    },
-    {
-      id: "ORD-002",
-      item: "D20 Dice x2",
-      status: "Shipped",
-      total: 94.0,
-      date: "Apr 22",
-    },
-    {
-      id: "ORD-003",
-      item: "Cable Clip",
-      status: "Pending",
-      total: 28.75,
-      date: "Apr 30",
-    },
-    {
-      id: "ORD-004",
-      item: "Iron Man Bust",
-      status: "Completed",
-      total: 134.5,
-      date: "Apr 15",
-    },
-  ];
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const data = await apiGet("/orders");
+        setOrders(data);
+        if (data.length > 0) {
+          setSelectedOrder(data[0].id || data[0].order_header_id);
+        }
+      } catch (err: any) {
+        console.log("Could not load orders");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadOrders();
+  }, []);
 
-  const orderDetails: Record<string, any> = {
-    "ORD-001": {
-      orderDate: "2026-04-25",
-      completion: "--",
-      shipDate: "--",
-      subtotal: 75.16,
-      shipping: 10,
-      total: 85.16,
-      tracking: null,
-      items: [
-        {
-          name: "Desk Vase",
-          scale: "100%",
-          qty: 1,
-          sub: 75.16,
-        },
-      ],
-    },
-
-    "ORD-002": {
-      orderDate: "2026-04-18",
-      completion: "2026-04-21",
-      shipDate: "2026-04-22",
-      subtotal: 84,
-      shipping: 10,
-      total: 94,
-      tracking: "1234 5678 9012 3456",
-      items: [
-        {
-          name: "D20 Dice",
-          scale: "100%",
-          qty: 2,
-          sub: 84,
-        },
-      ],
-    },
-
-    "ORD-003": {
-      orderDate: "2026-04-28",
-      completion: "--",
-      shipDate: "--",
-      subtotal: 18.75,
-      shipping: 10,
-      total: 28.75,
-      tracking: null,
-      items: [
-        {
-          name: "Cable Clip",
-          scale: "100%",
-          qty: 1,
-          sub: 18.75,
-        },
-      ],
-    },
-
-    "ORD-004": {
-      orderDate: "2026-04-10",
-      completion: "2026-04-13",
-      shipDate: "2026-04-14",
-      subtotal: 124.5,
-      shipping: 10,
-      total: 134.5,
-      tracking: "9876 5432 1098 7654",
-      items: [
-        {
-          name: "Iron Man Bust",
-          scale: "100%",
-          qty: 1,
-          sub: 124.5,
-        },
-      ],
-    },
-  };
+  useEffect(() => {
+    if (!selectedOrder) return;
+    const loadDetail = async () => {
+      try {
+        const data = await apiGet(`/orders/${selectedOrder}`);
+        setOrderDetails((prev) => ({ ...prev, [selectedOrder]: data }));
+      } catch (err: any) {
+        console.log("Could not load order detail");
+      }
+    };
+    loadDetail();
+  }, [selectedOrder]);
 
   const statusStyles: Record<string, string> = {
     Pending: "bg-yellow-100 text-yellow-800 border border-yellow-200",
@@ -122,7 +51,18 @@ export default function OrdersPage() {
     Completed: "bg-green-100 text-green-800 border border-green-200",
   };
 
-  const selected = useMemo(() => orderDetails[selectedOrder], [selectedOrder]);
+  const selected = orderDetails[selectedOrder] || null;
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading orders...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -266,7 +206,28 @@ export default function OrdersPage() {
                         )}
 
                         {order.status === "Pending" && (
-                          <button className="text-sm font-medium text-red-600 transition hover:text-red-800">
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                await apiPut(
+                                  `/orders/${order.id || order.order_header_id}/cancel`,
+                                  {},
+                                );
+                                setOrders(
+                                  orders.map((o) =>
+                                    (o.id || o.order_header_id) ===
+                                    (order.id || order.order_header_id)
+                                      ? { ...o, status: "Cancelled" }
+                                      : o,
+                                  ),
+                                );
+                              } catch (err: any) {
+                                console.log("Could not cancel order");
+                              }
+                            }}
+                            className="text-sm font-medium text-red-600 transition hover:text-red-800"
+                          >
                             Cancel
                           </button>
                         )}

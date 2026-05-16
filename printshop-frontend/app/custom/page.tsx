@@ -55,26 +55,6 @@ export default function CustomUploadPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mb-5 rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between px-5 py-4">
-            <h1 className="text-xl font-semibold tracking-tight">PrintShop</h1>
-            <nav className="flex gap-5 text-sm text-slate-600">
-              <Link href="/" className="hover:text-slate-900">
-                Models
-              </Link>
-              <Link href="/" className="hover:text-slate-900">
-                Cart
-              </Link>
-              <Link href="/" className="hover:text-slate-900">
-                Orders
-              </Link>
-              <Link href="/" className="hover:text-slate-900">
-                Profile
-              </Link>
-            </nav>
-          </div>
-        </div>
-
         <div className="mb-5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-center text-sm text-blue-800">
           Home → Custom Tile → Upload → Configurator → Cart → Checkout
         </div>

@@ -1,10 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { apiGet, apiPost } from "../../lib/api";
 
 export default function ConfiguratorPage() {
+  const params = useParams();
+  const id = params.id as string;
+
   const [scale, setScale] = useState(100);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [cartError, setCartError] = useState("");
+  const [model, setModel] = useState<any>(null);
+  const [selectedFilament, setSelectedFilament] = useState<any>(null);
   const [infill, setInfill] = useState(50);
   const [material, setMaterial] = useState("PLA");
   const [color, setColor] = useState("Black");
@@ -16,9 +29,22 @@ export default function ConfiguratorPage() {
     height: 95,
   });
 
-  const model = {
-    name: "Desk Vase",
-  };
+  useEffect(() => {
+    const loadModel = async () => {
+      try {
+        const data = await apiGet(`/models/${id}`);
+        setModel(data);
+        if (data.filaments && data.filaments.length > 0) {
+          setSelectedFilament(data.filaments[0]);
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadModel();
+  }, [id]);
 
   const materials = ["PLA", "PETG", "ABS", "TPU"];
   const colors = ["Black", "White", "Blue", "Red", "Grey", "Green"];
@@ -60,8 +86,18 @@ export default function ConfiguratorPage() {
     dimensions.width > 500 ||
     dimensions.height > 500;
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading model...</p>
+        </div>
+      </div>
+    );
+  }
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white text-slate-900">
       <div className="mx-auto max-w-7xl px-6 py-10">
         <div className="mb-8">
           <p className="mb-2 text-sm uppercase tracking-[0.2em] text-slate-500">
@@ -76,6 +112,22 @@ export default function ConfiguratorPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {addedToCart && (
+            <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4 flex justify-between items-center">
+              <p className="text-sm text-green-700 font-medium">
+                ✓ Added to cart!
+              </p>
+              <Link href="/cart" className="text-sm text-green-700 underline">
+                View cart →
+              </Link>
+            </div>
+          )}
+
+          {cartError && (
+            <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-3">
+              <p className="text-sm text-red-600">{cartError}</p>
+            </div>
+          )}
           <div className="space-y-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="mb-4 h-56 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center">
@@ -88,7 +140,7 @@ export default function ConfiguratorPage() {
                   Selected model
                 </p>
                 <h2 className="mt-2 text-2xl font-medium text-slate-950">
-                  {model.name}
+                  {model?.name || "Loading model"}
                 </h2>
               </div>
             </div>
@@ -289,12 +341,28 @@ export default function ConfiguratorPage() {
               </p>
             </div>
 
-            <Link
-              href="/cart"
-              className="block rounded-2xl bg-slate-950 px-6 py-4 text-center text-sm font-medium text-white shadow-lg shadow-slate-950/10 transition hover:bg-slate-800"
+            <button
+              onClick={async () => {
+                setCartError("");
+                try {
+                  await apiPost("/cart", {
+                    model_id: Number(id),
+                    filament_id: 1,
+                    scale: scale,
+                    infill_percent: infill,
+                    color_count: multiColor ? selectedColors.length : 1,
+                    quantity: 1,
+                  });
+                  setAddedToCart(true);
+                  setTimeout(() => setAddedToCart(false), 3000);
+                } catch (err: any) {
+                  setCartError(err.message);
+                }
+              }}
+              className="block w-full rounded-2xl bg-slate-950 px-6 py-4 text-center text-sm font-medium text-white shadow-lg shadow-slate-950/10 transition hover:bg-slate-800 cursor-pointer"
             >
               Add to Cart →
-            </Link>
+            </button>
           </div>
 
           <div>

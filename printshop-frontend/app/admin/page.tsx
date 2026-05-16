@@ -1,58 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import { apiGet, apiPost, apiDelete, apiPut } from "../lib/api";
 export default function AdminPage() {
-  const [filaments, setFilaments] = useState([
-    {
-      id: 1,
-      name: "PLA",
-      color: "Black",
-      stock: 820,
-      price: 25,
-      wear: false,
-      lead: "--",
-    },
-    {
-      id: 2,
-      name: "PLA",
-      color: "White",
-      stock: 140,
-      price: 25,
-      wear: false,
-      lead: "3 days",
-    },
-    {
-      id: 3,
-      name: "PETG",
-      color: "Blue",
-      stock: 510,
-      price: 32,
-      wear: false,
-      lead: "--",
-    },
-    {
-      id: 4,
-      name: "ABS",
-      color: "Grey",
-      stock: 670,
-      price: 28,
-      wear: true,
-      lead: "--",
-    },
-    {
-      id: 5,
-      name: "TPU",
-      color: "Red",
-      stock: 90,
-      price: 38,
-      wear: true,
-      lead: "5 days",
-    },
-  ]);
-
-  const [showAddFilament, setShowAddFilament] = useState(false);
+  const [filaments, setFilaments] = useState<any[]>([]);
+  const [printers, setPrinters] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newFilament, setNewFilament] = useState({
     name: "",
     color: "",
@@ -62,25 +19,28 @@ export default function AdminPage() {
     lead: "",
   });
 
-  const [printers, setPrinters] = useState([
-    { id: 1, name: "Prusa MK4 #1", status: "Printing", job: "ORD-001" },
-    { id: 2, name: "Prusa MK4 #2", status: "Printing", job: "ORD-002" },
-    { id: 3, name: "Prusa MK4 #3", status: "Available", job: null },
-  ]);
-
-  const [orders, setOrders] = useState([
-    { id: "ORD-001", status: "Printing", total: 85.16, printer: "MK4 #1" },
-    { id: "ORD-002", status: "Shipped", total: 94.0, printer: "MK4 #2" },
-    { id: "ORD-003", status: "Pending", total: 28.75, printer: "--" },
-    { id: "ORD-004", status: "Completed", total: 134.5, printer: "MK4 #3" },
-  ]);
-
-  const [users, setUsers] = useState([
-    { id: 1, username: "Robel_M", fullName: "Robel Measho", isAdmin: false },
-    { id: 2, username: "johnny_k", fullName: "Johnny Kwan", isAdmin: false },
-    { id: 3, username: "rami_a", fullName: "Rami Ayesh", isAdmin: false },
-    { id: 4, username: "admin", fullName: "Bo Cen", isAdmin: true },
-  ]);
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const [filamentsData, printersData, ordersData, usersData] =
+          await Promise.all([
+            apiGet("/admin/filaments"),
+            apiGet("/admin/printers"),
+            apiGet("/admin/orders"),
+            apiGet("/admin/users"),
+          ]);
+        setFilaments(filamentsData);
+        setPrinters(printersData);
+        setOrders(ordersData);
+        setUsers(usersData);
+      } catch (err: any) {
+        console.log("Could not load dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDashboard();
+  }, []);
 
   const statusColor: Record<string, string> = {
     Pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
@@ -89,20 +49,19 @@ export default function AdminPage() {
     Completed: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
   };
 
-  const handleAddFilament = () => {
-    const id = filaments.length + 1;
-    setFilaments([
-      ...filaments,
-      {
-        id,
-        name: newFilament.name,
-        color: newFilament.color,
-        stock: Number(newFilament.stock),
-        price: Number(newFilament.price),
-        wear: newFilament.wear,
-        lead: newFilament.lead || "--",
-      },
-    ]);
+  const handleAddFilament = async () => {
+    try {
+      const data = await apiPost("/admin/filaments", {
+        material_name: newFilament.name,
+        color_hex: newFilament.color,
+        quantity_in_stock: Number(newFilament.stock),
+        filament_price: Number(newFilament.price),
+        more_wear_and_tear: newFilament.wear,
+      });
+      setFilaments([...filaments, data]);
+    } catch (err: any) {
+      console.log("Could not add filament");
+    }
     setNewFilament({
       name: "",
       color: "",
@@ -114,32 +73,67 @@ export default function AdminPage() {
     setShowAddFilament(false);
   };
 
-  const addPrinter = () => {
-    const id = printers.length + 1;
-    setPrinters([
-      ...printers,
-      { id, name: `Prusa MK4 #${id}`, status: "Available", job: null },
-    ]);
+  const addPrinter = async () => {
+    try {
+      const data = await apiPost("/admin/printers", { printer_type_id: 1 });
+      setPrinters([...printers, data]);
+    } catch (err: any) {
+      console.log("Could not add printer");
+    }
   };
 
-  const removePrinter = (id: number) => {
+  const removePrinter = async (id: number) => {
+    try {
+      await apiDelete(`/admin/printers/${id}`);
+    } catch (err: any) {
+      console.log("Could not remove printer");
+    }
     setPrinters(printers.filter((p) => p.id !== id));
   };
 
-  const toggleAdmin = (id: number) => {
-    setUsers(
-      users.map((user) =>
-        user.id === id ? { ...user, isAdmin: !user.isAdmin } : user,
-      ),
-    );
+  const toggleAdmin = async (id: number) => {
+    const user = users.find((u) => u.id || u.user_id === id);
+    const isAdmin = user?.is_admin || user?.isAdmin;
+    try {
+      if (isAdmin) {
+        await apiPut(`/admin/users/${id}/remove-admin`, {});
+      } else {
+        await apiPut(`/admin/users/${id}/make-admin`, {});
+      }
+      setUsers(
+        users.map((u) =>
+          (u.id || u.user_id) === id
+            ? { ...u, is_admin: !isAdmin, isAdmin: !isAdmin }
+            : u,
+        ),
+      );
+    } catch (err: any) {
+      console.log("Could not toggle admin");
+    }
   };
 
   const activeOrders = orders.filter(
     (o) => o.status === "Printing" || o.status === "Pending",
   ).length;
-  const lowStock = filaments.filter((f) => f.stock < 300).length;
+  const lowStock = filaments.filter(
+    (f) => (f.quantity_in_stock || f.stock || 0) < 300,
+  ).length;
   const totalOrders = orders.length;
   const freePrinters = printers.filter((p) => p.status === "Available").length;
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+  function setShowAddFilament(arg0: boolean): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -187,7 +181,7 @@ export default function AdminPage() {
                   Filament inventory
                 </h2>
                 <button
-                  onClick={() => setShowAddFilament(!showAddFilament)}
+                  onClick={() => setShowAddFilament(!setShowAddFilament)}
                   className="cursor-pointer text-sm font-medium text-blue-700 hover:text-blue-800"
                 >
                   + Add filament
@@ -267,7 +261,7 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              {showAddFilament && (
+              {setShowAddFilament && (
                 <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-slate-950">
@@ -384,7 +378,7 @@ export default function AdminPage() {
                           {user.username}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700">
-                          {user.fullName}
+                          {user.full_name || user.fullName}
                         </td>
                         <td className="px-4 py-3">
                           <span
@@ -399,7 +393,7 @@ export default function AdminPage() {
                         </td>
                         <td className="px-4 py-3">
                           <button
-                            onClick={() => toggleAdmin(user.id)}
+                            onClick={() => toggleAdmin(user.user_id || user.id)}
                             className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                               user.isAdmin
                                 ? "bg-rose-50 text-rose-700 hover:bg-rose-100"
@@ -540,4 +534,7 @@ export default function AdminPage() {
       </div>
     </div>
   );
+}
+function setShowAddFilament(arg0: boolean) {
+  throw new Error("Function not implemented.");
 }
