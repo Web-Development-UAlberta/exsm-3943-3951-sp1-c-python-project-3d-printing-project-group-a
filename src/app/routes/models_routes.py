@@ -132,7 +132,8 @@ def get_model(model_id):
     
 @models_bp.route("/upload", methods=["POST"])
 def custom_upload():
-    CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
+    #CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
+    CUSTOM_UPLOAD = "src/app/model_files/"
     ALLOWED_FILE_EXTENSIONS = {'3tl', '3mf'}
 
     def extension_check(filename):
@@ -148,8 +149,6 @@ def custom_upload():
         if file and extension_check(file.filename):
             if file:
                 filename = secure_filename(file.filename)
-                if not os.path.exists(CUSTOM_UPLOAD):
-                    os.makedirs(CUSTOM_UPLOAD, exist_ok=True)
                 save_path = os.path.join(CUSTOM_UPLOAD, filename)
                 file.save(save_path)
                 return jsonify({"message": "File uploaded", "filename": file.filename}), 200
