@@ -387,14 +387,6 @@ class TestModelsRoutes(unittest.TestCase):
         res = self.client.post("/api/models/upload", data=data, content_type='multipart/form-data')
         self.assertEqual(res.status_code, 400)
 
-    # Validates a file upload is successful
-    def test_file_upload_success(self):
-        file_content = b"3D model of Super Man"
-        filename = "super_man_3d_model.3tl"
-        upload = {'file': (io.BytesIO(file_content), filename)}
-        res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
-        self.assertEqual(res.status_code, 200)
-
     # Validates a file upload file extension is valid
     def test_file_upload_success(self):
         file_content = b"3D model of Super Man"
@@ -403,6 +395,13 @@ class TestModelsRoutes(unittest.TestCase):
         res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
 
+    # Validates a file upload is successful
+    def test_file_upload_success(self):
+        file_content = b"3D model of Super Man"
+        filename = "super_man_3d_model.3tl"
+        upload = {'file': (io.BytesIO(file_content), filename)}
+        res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
 
 if __name__ == "__main__":
     unittest.main()

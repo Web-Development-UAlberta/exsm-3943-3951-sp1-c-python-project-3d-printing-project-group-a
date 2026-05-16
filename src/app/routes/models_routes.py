@@ -134,6 +134,8 @@ def get_model(model_id):
 def custom_upload():
     CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
     ALLOWED_FILE_EXTENSIONS = {'3tl', '3mf'}
+    if not os.path.exists(CUSTOM_UPLOAD):
+        os.makedirs(CUSTOM_UPLOAD, exist_ok=True)
 
     def extension_check(filename):
         return '.' in filename and \
@@ -148,8 +150,6 @@ def custom_upload():
         if file and extension_check(file.filename):
             if file:
                 filename = secure_filename(file.filename)
-                if not os.path.exists(CUSTOM_UPLOAD):
-                    os.makedirs(CUSTOM_UPLOAD, exist_ok=True)
                 save_path = os.path.join(CUSTOM_UPLOAD, filename)
                 file.save(save_path)
                 return jsonify({"message": "File uploaded", "filename": file.filename}), 200
