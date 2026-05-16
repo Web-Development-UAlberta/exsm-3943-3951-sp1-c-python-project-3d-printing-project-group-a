@@ -46,10 +46,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './printshop-frontend/package-lock.json'
 
-      - name: Create .env file
-        run: |
-          echo "CUSTOM_UPLOAD=${{ secrets.CUSTOM_UPLOAD }}" >> .env
-
       - name: Install jest
         run: npm ci
         working-directory: ./printshop-frontend

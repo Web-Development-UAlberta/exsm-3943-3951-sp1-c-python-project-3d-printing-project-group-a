@@ -132,7 +132,8 @@ def get_model(model_id):
     
 @models_bp.route("/upload", methods=["POST"])
 def custom_upload():
-    CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
+    #CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
+    CUSTOM_UPLOAD = "src/app/model_files/"
     ALLOWED_FILE_EXTENSIONS = {'3tl', '3mf'}
 
     def extension_check(filename):
