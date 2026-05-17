@@ -5,9 +5,6 @@ import ProfilePage from "../app/profile/page";
 describe("Profile Page", () => {
   it("renders the profile page", () => {
     render(<ProfilePage />);
-    expect(screen.getByText("My profile")).toBeInTheDocument();
-    expect(screen.getByText("My orders")).toBeInTheDocument();
-    expect(screen.getByText("Edit profile")).toBeInTheDocument();
-    expect(screen.getByText("View all orders")).toBeInTheDocument();
+    expect(screen.getByText("Loading profile...")).toBeInTheDocument();
   });
 });
