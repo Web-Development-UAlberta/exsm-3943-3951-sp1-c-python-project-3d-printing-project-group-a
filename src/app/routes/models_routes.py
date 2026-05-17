@@ -76,7 +76,7 @@ def custom_upload():
     CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
     MODEL_IMAGES = os.getenv('MODEL_IMAGES')
     #CUSTOM_UPLOAD = "src/app/model_files/"
-    ALLOWED_FILE_EXTENSIONS = {'3tl', '3mf'}
+    ALLOWED_FILE_EXTENSIONS = {'stl', '3mf'}
 
     def extension_check(filename):
         return '.' in filename and \

@@ -352,7 +352,7 @@ class TestModelsRoutes(unittest.TestCase):
     # Validates a file upload file extension is valid
     def test_file_upload_success(self):
         file_content = b"3D model of Super Man"
-        filename = "super_man_3d_model.jpg"
+        filename = "super_man_3d_model.png"
         upload = {'file': (io.BytesIO(file_content), filename)}
         res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -360,7 +360,7 @@ class TestModelsRoutes(unittest.TestCase):
     # Validates a file upload is successful
     def test_file_upload_success(self):
         file_content = b"3D model of Super Man"
-        filename = "super_man_3d_model.3tl"
+        filename = "super_man_3d_model.stl"
         upload = {'file': (io.BytesIO(file_content), filename)}
         res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
