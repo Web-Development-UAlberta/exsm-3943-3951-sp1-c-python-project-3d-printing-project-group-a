@@ -197,6 +197,173 @@ class TestModelsRoutes(unittest.TestCase):
         json_first_record = json_list[0]['model_name']
         self.assertIsInstance(json_first_record, str)
 
+    # Validates missing json for quote calculations
+    def test_quote_missing_fields(self):
+        res = self.client.post("/api/models/quote", json={
+        })
+        self.assertEqual(res.status_code, 400)
+
+    # Validates missing model_id field for quote calculations
+    def test_quote_missing_model(self):
+        res = self.client.post("/api/models/quote", json={
+            "filament_id": 2,
+            "scale": 50,
+            "infill_percent": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 400)
+
+    # Validates missing filament_id field for quote calculations
+    def test_quote_missing_filament(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id": 2,
+            "scale": 50,
+            "infill_percent": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 400)
+
+    # Validates missing scale field for quote calculations
+    def test_quote_missing_scale(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id":2,
+            "filament_id": 2,
+            "infill_percent": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 400)
+
+    # Validates missing infill field for quote calculations
+    def test_quote_missing_infill(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id":2,
+            "filament_id": 2,
+            "scale": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 400)       
+
+    # Validates missing color count field for quote calculations
+    def test_quote_missing_color_count(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id":2,
+            "filament_id": 2,
+            "scale": 50,
+            "infill_percent": 50
+        })
+        self.assertEqual(res.status_code, 400)    
+
+    # Validates require fields exists for quote calculations
+    def test_quote_required_fields(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id":2,
+            "filament_id": 2,
+            "scale": 50,
+            "infill_percent": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 200)
+
+    # Validates invalid model input for quote caluclations
+    def test_quote_invalid_model(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id": 99999,
+            "filament_id": 2,
+            "scale": 50,
+            "infill_percent": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 404)
+
+    # Validates invalid filament input for quote caluclations
+    def test_quote_invalid_filament(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id": 2,
+            "filament_id": 999999,
+            "scale": 50,
+            "infill_percent": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 404)
+
+    # Validates invalid scale input for quote caluclations
+    def test_quote_invalid_scale(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id":2,
+            "filament_id": 2,
+            "scale": 999,
+            "infill_percent": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 400)
+
+    # Validates invalid infill input for quote calculations
+    def test_quote_invalid_infill(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id": 2,
+            "filament_id": 2,
+            "scale": 50,
+            "infill_percent": 150,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 400)
+
+    # Validates no surcharge applied for single color printing
+    def test_quote_surcharge_single(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id": 2,
+            "filament_id": 2,
+            "scale": 50,
+            "infill_percent": 50,
+            "color_count": 1
+        })
+        self.assertEqual(res.status_code, 200)
+        json_list = res.get_json()
+        json_first_record = json_list['multicolor_surcharge']
+        self.assertEqual(json_first_record, 0) 
+
+    # Validates surcharge applied for multicolor printing
+    def test_quote_surcharge_multi(self):
+        res = self.client.post("/api/models/quote", json={
+            "model_id": 2,
+            "filament_id": 2,
+            "scale": 50,
+            "infill_percent": 50,
+            "color_count": 2
+        })
+        self.assertEqual(res.status_code, 200)
+        json_list = res.get_json()
+        json_first_record = json_list['multicolor_surcharge']
+        self.assertGreater(json_first_record, 0)
+
+    # Validates a file upload file is present
+    def test_file_upload_missing_file(self):
+        res = self.client.post("/api/models/upload", data={}, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 400)
+
+    # Validates a file upload filename is not blank
+    def test_file_upload_blank_filename(self):
+        filename = ""
+        file_content = b"Test"
+        data = {'file': (io.BytesIO(file_content), filename)}
+        res = self.client.post("/api/models/upload", data=data, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 400)
+
+    # Validates a file upload file extension is valid
+    def test_file_upload_success(self):
+        file_content = b"3D model of Super Man"
+        filename = "super_man_3d_model.jpg"
+        upload = {'file': (io.BytesIO(file_content), filename)}
+        res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+    # Validates a file upload is successful
+    def test_file_upload_success(self):
+        file_content = b"3D model of Super Man"
+        filename = "super_man_3d_model.3tl"
+        upload = {'file': (io.BytesIO(file_content), filename)}
+        res = self.client.post("/api/models/upload", data=upload, content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
 
 if __name__ == '__main__':
     unittest.main()

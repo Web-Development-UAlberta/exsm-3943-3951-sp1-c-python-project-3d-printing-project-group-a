@@ -250,7 +250,7 @@ def seed():
                 print_time_hours=8.0,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/christmas_ornament.3tl",
-		        model_image="src/app/model_images/chrstmas_ornament.png"
+		        model_image="src/app/model_images/christmas_ornament.png"
             )
 
             d20_dice = Model(
@@ -326,7 +326,7 @@ def seed():
             )
 
             helmet_prop = Model(
-                model_name="Helmet Prop",
+                model_name="Helmet",
                 model_length=300,
                 model_width=250,
                 model_height=280,
@@ -338,7 +338,7 @@ def seed():
             )
 
             pylon_prop = Model(
-                model_name="Helmet Prop",
+                model_name="Traffic Cone",
                 model_length=300,
                 model_width=250,
                 model_height=280,
@@ -369,6 +369,18 @@ def seed():
                 model_description="World globe.",
                 print_time_hours=6.0,
                 printer_id=printer3.printer_id,
+                model_file="src/app/model_files/earth_model.3tl",
+		        model_image="src/app/model_images/earth_model.png"
+            )
+
+            globe_earth = Model(
+                model_name="Custom Print",
+                model_length=100,
+                model_width=100,
+                model_height=100,
+                model_description="Custom Print",
+                print_time_hours=3.0,
+                printer_id=printer1.printer_id,
                 model_file="src/app/model_files/earth_model.3tl",
 		        model_image="src/app/model_images/earth_model.png"
             )
