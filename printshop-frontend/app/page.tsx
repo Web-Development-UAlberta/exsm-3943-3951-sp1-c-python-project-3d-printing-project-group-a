@@ -15,13 +15,48 @@ export default function Home() {
   const [error, setError] = useState("");
 
   const categories = [
-    "All",
-    "Utilities",
-    "Gaming",
-    "Collectibles",
-    "Props",
-    "Decorations",
-    "Education",
+    {
+      name: "All",
+      color: "bg-gray-900 text-white",
+      hover: "hover:bg-gray-800",
+      inactive: "bg-gray-100 text-gray-600 hover:bg-gray-200",
+    },
+    {
+      name: "Utilities",
+      color: "bg-blue-600 text-white",
+      hover: "hover:bg-blue-700",
+      inactive: "bg-blue-50 text-blue-600 hover:bg-blue-100",
+    },
+    {
+      name: "Gaming",
+      color: "bg-purple-600 text-white",
+      hover: "hover:bg-purple-700",
+      inactive: "bg-purple-50 text-purple-600 hover:bg-purple-100",
+    },
+    {
+      name: "Collectibles",
+      color: "bg-yellow-500 text-white",
+      hover: "hover:bg-yellow-600",
+      inactive: "bg-yellow-50 text-yellow-600 hover:bg-yellow-100",
+    },
+    {
+      name: "Props",
+      color: "bg-teal-600 text-white",
+      hover: "hover:bg-teal-700",
+      inactive: "bg-teal-50 text-teal-600 hover:bg-red-100",
+    },
+    {
+      name: "Decorations",
+      color: "bg-pink-500 text-white",
+      hover: "hover:bg-pink-600",
+      inactive: "bg-pink-50 text-pink-600 hover:bg-pink-100",
+    },
+    {
+      name: "Education",
+      color: "bg-green-600 text-white",
+      hover: "hover:bg-green-700",
+      inactive: "bg-green-50 text-green-600 hover:bg-green-100",
+    },
   ];
   const materials = ["All", "PLA", "PETG", "ABS", "TPU"];
 
@@ -47,12 +82,14 @@ export default function Home() {
       let query = "/models?";
       if (search) query += `search=${search}&`;
       if (activeCategory !== "All") {
-        const tagIndex = categories.indexOf(activeCategory);
+        const tagIndex = categories.findIndex((c) => c.name === activeCategory);
         if (tagIndex > 0) query += `tag_id=${tagIndex}&`;
       }
+      if (activeMaterial !== "All") query += `material=${activeMaterial}&`;
       const data = await apiGet(query);
       setModels(data);
     } catch (err: any) {
+      console.log("Backend not available");
       setError(err.message);
     } finally {
       setLoading(false);
@@ -86,18 +123,16 @@ export default function Home() {
         <div className="flex gap-2 flex-wrap">
           {categories.map((cat) => (
             <button
-              key={cat}
+              key={cat.name}
               onClick={() => {
-                setActiveCategory(cat);
+                setActiveCategory(cat.name);
                 handleSearch();
               }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium ${
-                activeCategory === cat
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                activeCategory === cat.name ? cat.color : cat.inactive
               }`}
             >
-              {cat}
+              {cat.name}
             </button>
           ))}
         </div>
@@ -119,6 +154,19 @@ export default function Home() {
             {mat}
           </button>
         ))}
+        {(activeCategory !== "All" || activeMaterial !== "All" || search) && (
+          <button
+            onClick={() => {
+              setActiveCategory("All");
+              setActiveMaterial("All");
+              setSearch("");
+              loadModels();
+            }}
+            className="text-sm text-red-600 hover:underline"
+          >
+            Clear filters ✕
+          </button>
+        )}
       </div>
 
       {/* Error */}
@@ -163,14 +211,19 @@ export default function Home() {
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {model.tags?.map((tag: any) => (
-                        <span
-                          key={tag.tag_id}
-                          className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full"
-                        >
-                          {tag.tag_name}
-                        </span>
-                      ))}
+                      {model.tags?.map((tag: any) => {
+                        const catColor = categories.find(
+                          (c) => c.name === tag.tag_name,
+                        );
+                        return (
+                          <span
+                            key={tag.tag_id}
+                            className={`text-xs px-2 py-1 rounded-full ${catColor ? catColor.inactive : "bg-gray-100 text-gray-600"}`}
+                          >
+                            {tag.tag_name}
+                          </span>
+                        );
+                      })}
                       {model.filaments?.map((f: any) => (
                         <span
                           key={f.filament_id}
