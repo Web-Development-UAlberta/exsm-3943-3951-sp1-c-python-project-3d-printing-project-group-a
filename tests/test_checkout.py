@@ -17,7 +17,7 @@ class TestCheckout(unittest.TestCase):
         cls.client = cls.app.test_client()
 
         # unique user
-        s = str(int(time.time()))
+        s = str(int(time.time() * 1000))
         cls.username = f"checkout_{s}"
         cls.password = "Test1234!"
 

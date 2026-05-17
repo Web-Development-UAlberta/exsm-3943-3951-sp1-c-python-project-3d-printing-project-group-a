@@ -2,6 +2,10 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import RegisterPage from "../app/register/page";
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
 describe("Register Page", () => {
   it("renders the register page", () => {
     render(<RegisterPage />);

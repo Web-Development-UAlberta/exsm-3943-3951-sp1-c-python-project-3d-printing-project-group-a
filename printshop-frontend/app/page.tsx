@@ -1,12 +1,18 @@
+/* eslint-disable react-hooks/immutability */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { apiGet } from "./lib/api";
 
 export default function Home() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeMaterial, setActiveMaterial] = useState("All");
+  const [models, setModels] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const categories = [
     "All",
@@ -17,152 +23,179 @@ export default function Home() {
     "Decorations",
     "Education",
   ];
-
   const materials = ["All", "PLA", "PETG", "ABS", "TPU"];
 
-  const models = [
-    { id: 1, name: "Desk Vase", price: 75.16, category: "Decorations" },
-    { id: 2, name: "D20 Dice", price: 42.0, category: "Gaming" },
-    { id: 3, name: "Iron Man Bust", price: 124.5, category: "Collectibles" },
-    { id: 4, name: "Cable Clip", price: 18.75, category: "Utilities" },
-    { id: 5, name: "Helmet Prop", price: 89.0, category: "Props" },
-    { id: 6, name: "DNA Model", price: 68.2, category: "Education" },
-  ];
+  useEffect(() => {
+    loadModels();
+  }, []);
 
-  const filtered = models.filter((m) => {
-    if (activeCategory !== "All" && m.category !== activeCategory) return false;
-    if (activeMaterial !== "All" && activeMaterial !== "All") return true;
-    if (search && !m.name.toLowerCase().includes(search.toLowerCase()))
-      return false;
-    return true;
-  });
+  const loadModels = async () => {
+    setLoading(true);
+    try {
+      const data = await apiGet("/models");
+      setModels(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      let query = "/models?";
+      if (search) query += `search=${search}&`;
+      if (activeCategory !== "All") {
+        const tagIndex = categories.indexOf(activeCategory);
+        if (tagIndex > 0) query += `tag_id=${tagIndex}&`;
+      }
+      const data = await apiGet(query);
+      setModels(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900">
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
-            PrintShop
-          </p>
-          <h1 className="mt-2 text-4xl font-medium tracking-tight text-slate-950">
-            Browse models
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Discover ready-to-print designs or upload your own.
-          </p>
-        </div>
+    <div>
+      {/* Search */}
+      <div className="flex gap-3 mb-6">
+        <input
+          type="text"
+          placeholder="Search models..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm"
+        />
+        <button
+          onClick={handleSearch}
+          className="bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium"
+        >
+          Search
+        </button>
+      </div>
 
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row">
-          <input
-            type="text"
-            placeholder="Search models..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
-          />
-          <button className="rounded-2xl bg-slate-950 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-slate-950/10 transition hover:bg-slate-800">
-            Search
-          </button>
-        </div>
-
-        <div className="mb-5">
-          <h2 className="mb-3 text-sm font-medium uppercase tracking-[0.16em] text-slate-500">
-            Browse by category
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`rounded-full px-4 py-2 text-sm transition ${
-                  activeCategory === cat
-                    ? "bg-slate-950 text-white shadow-md"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mb-8 flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium uppercase tracking-[0.16em] text-slate-500">
-            Material
-          </span>
-          {materials.map((mat) => (
+      {/* Categories */}
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-gray-700 mb-2">
+          Browse by category
+        </h2>
+        <div className="flex gap-2 flex-wrap">
+          {categories.map((cat) => (
             <button
-              key={mat}
-              onClick={() => setActiveMaterial(mat)}
-              className={`rounded-full px-4 py-2 text-sm transition ${
-                activeMaterial === mat
-                  ? "bg-slate-950 text-white shadow-md"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat);
+                handleSearch();
+              }}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium ${
+                activeCategory === cat
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              {mat}
+              {cat}
             </button>
           ))}
         </div>
+      </div>
 
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-2xl font-medium tracking-tight text-slate-950">
+      {/* Material filter */}
+      <div className="flex items-center gap-2 mb-6">
+        <span className="text-sm font-semibold text-gray-700">Material:</span>
+        {materials.map((mat) => (
+          <button
+            key={mat}
+            onClick={() => setActiveMaterial(mat)}
+            className={`px-3 py-1 rounded-full text-sm ${
+              activeMaterial === mat
+                ? "bg-gray-900 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {mat}
+          </button>
+        ))}
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Loading models...</p>
+        </div>
+      )}
+
+      {/* Model grid */}
+      {!loading && (
+        <>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">
             Model library
           </h2>
-          <p className="text-sm text-slate-500">
-            {filtered.length} models found
-          </p>
-        </div>
+          {models.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No models found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {models.map((model: any) => (
+                <Link
+                  key={model.model_id}
+                  href={`/product/${model.model_id}`}
+                  className="border border-gray-200 rounded-lg bg-white hover:shadow-md"
+                >
+                  <div className="h-40 bg-gray-100 rounded-t-lg flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">[ preview ]</span>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-semibold text-gray-900">
+                        {model.model_name}
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {model.tags?.map((tag: any) => (
+                        <span
+                          key={tag.tag_id}
+                          className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full"
+                        >
+                          {tag.tag_name}
+                        </span>
+                      ))}
+                      {model.filaments?.map((f: any) => (
+                        <span
+                          key={f.filament_id}
+                          className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
+                        >
+                          {f.material_name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((model) => (
-            <Link
-              key={model.id}
-              href={`/product/${model.id}`}
-              className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <div className="flex h-44 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-50">
-                <span className="text-sm text-slate-400">[ preview ]</span>
-              </div>
-
-              <div className="p-5">
-                <div className="mb-3 flex items-start justify-between gap-4">
-                  <h3 className="text-lg font-medium text-slate-950">
-                    {model.name}
-                  </h3>
-                  <span className="text-lg font-medium text-slate-950">
-                    ${model.price.toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
-                    {model.category}
-                  </span>
-                  <span className="text-xs text-blue-700 transition group-hover:underline">
-                    View details →
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        <div className="mt-10 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 text-center shadow-sm">
-          <p className="text-sm text-slate-700">
-            Looking to print your own design?
-          </p>
-          <p className="mt-3 text-xs text-slate-500">
-            Supported files: .stl .3mf .jpg .png
-          </p>
-
-          <Link
-            href="/custom"
-            className="mt-4 inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
-          >
-            Upload Custom Model
+      {/* Custom model hint */}
+      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+        <p className="text-sm text-blue-700 font-medium">
+          Looking to print your own design?{" "}
+          <Link href="/custom" className="underline">
+            Upload a custom model
           </Link>
-        </div>
+        </p>
       </div>
     </div>
   );
