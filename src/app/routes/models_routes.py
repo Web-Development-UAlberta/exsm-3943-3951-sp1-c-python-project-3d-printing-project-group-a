@@ -20,11 +20,12 @@ def get_models():
 
             query = db.query(Model)
 
-            if tag_id is not None:
-                query = query.join(ModelTag, isouter=True).filter(ModelTag.tag_id == tag_id)
+            # SAFE FILTERING (NO outer joins)
+            if tag_id:
+                query = query.join(ModelTag).filter(ModelTag.tag_id == tag_id)
 
-            if filament_id is not None:
-                query = query.join(ModelFilament, isouter=True).filter(
+            if filament_id:
+                query = query.join(ModelFilament).filter(
                     ModelFilament.filament_id == filament_id
                 )
 
@@ -36,29 +37,28 @@ def get_models():
             elif order == "desc":
                 query = query.order_by(Model.model_name.desc())
 
-            models = query.distinct().all()
+            models = query.all()   # ❗ REMOVE distinct()
 
             result = []
 
             for m in models:
-                tags = [
-                    {
-                        "tag_id": t.tag_id,
-                        "tag_name": t.tag_name
-                    }
-                    for t in (link.tag for link in m.tag_links)
-                    if t is not None
-                ]
 
-                filaments = [
-                    {
-                        "filament_id": f.filament_id,
-                        "material_name": f.material_name,
-                        "color_hex": f.color_hex
-                    }
-                    for f in (link.filament for link in m.filament_links)
-                    if f is not None
-                ]
+                tags = []
+                for link in getattr(m, "tag_links", []):
+                    if link.tag:
+                        tags.append({
+                            "tag_id": link.tag.tag_id,
+                            "tag_name": link.tag.tag_name
+                        })
+
+                filaments = []
+                for link in getattr(m, "filament_links", []):
+                    if link.filament:
+                        filaments.append({
+                            "filament_id": link.filament.filament_id,
+                            "material_name": link.filament.material_name,
+                            "color_hex": link.filament.color_hex
+                        })
 
                 result.append({
                     "model_id": m.model_id,
