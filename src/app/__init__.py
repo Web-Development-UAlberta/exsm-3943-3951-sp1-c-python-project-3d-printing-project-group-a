@@ -29,6 +29,9 @@ def create_app():
     from .routes.filaments import filament_bp
     app.register_blueprint(filament_bp, url_prefix="/api/filaments")
 
+    from .routes.checkout import checkout_bp
+    app.register_blueprint(checkout_bp, url_prefix="/api/checkout")
+
     from .routes.admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
 

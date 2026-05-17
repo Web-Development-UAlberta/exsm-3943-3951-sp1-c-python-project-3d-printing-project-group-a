@@ -238,7 +238,7 @@ def seed():
                 print_time_hours=8.0,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/desk_vase.3tl",
-		        #model_image="src/app/model_images/desk_vase.png"
+		        model_image="src/app/model_images/desk_vase.png"
             )
 
             tree_ornament = Model(
@@ -250,7 +250,7 @@ def seed():
                 print_time_hours=8.0,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/christmas_ornament.3tl",
-		        #model_image="src/app/model_images/chrstmas_ornament.png"
+		        model_image="src/app/model_images/chrstmas_ornament.png"
             )
 
             d20_dice = Model(
@@ -262,7 +262,7 @@ def seed():
                 print_time_hours=3.5,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/d20_dice.3tl",
-		        #model_image="src/app/model_images/d20_dice.png"
+		        model_image="src/app/model_images/d20_dice.png"
             )
 
             chess_queen = Model(
@@ -274,7 +274,7 @@ def seed():
                 print_time_hours=3.5,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/chess_queen.3tl",
-		        #model_image="src/app/model_images/chess_queen.png"
+		        model_image="src/app/model_images/chess_queen.png"
             )
 
             iron_man = Model(
@@ -286,7 +286,7 @@ def seed():
                 print_time_hours=18.0,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/iron_man.3tl",
-		        #model_image="src/app/model_images/iron_man.png"
+		        model_image="src/app/model_images/iron_man.png"
             )
 
             bat_man = Model(
@@ -298,7 +298,7 @@ def seed():
                 print_time_hours=18.0,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/bat_man.3tl",
-		        #model_image="src/app/model_images/bat_man.png"
+		        model_image="src/app/model_images/bat_man.png"
             )
 
             cable_clip = Model(
@@ -310,7 +310,7 @@ def seed():
                 print_time_hours=1.0,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/cable_clip.3tl",
-		        #model_image="src/app/model_images/cable_clip.png"
+		        model_image="src/app/model_images/cable_clip.png"
             )
 
             tool_hammer = Model(
@@ -322,7 +322,7 @@ def seed():
                 print_time_hours=1.0,
                 printer_id=printer1.printer_id,
                 model_file="src/app/model_files/tool_hammer.3tl",
-		        #model_image="src/app/model_images/tool_hammer.png"
+		        model_image="src/app/model_images/tool_hammer.png"
             )
 
             helmet_prop = Model(
@@ -334,7 +334,7 @@ def seed():
                 print_time_hours=24.0,
                 printer_id=printer2.printer_id,
                 model_file="src/app/model_files/prop_helmet.3tl",
-		        #model_image="src/app/model_images/prop_helmet.png"
+		        model_image="src/app/model_images/prop_helmet.png"
             )
 
             pylon_prop = Model(
@@ -346,7 +346,7 @@ def seed():
                 print_time_hours=24.0,
                 printer_id=printer2.printer_id,
                 model_file="src/app/model_files/prop_traffic_cone.3tl",
-		        #model_image="src/app/model_images/prop_traffic_cone.png"
+		        model_image="src/app/model_images/prop_traffic_cone.png"
             )
 
             dna_model = Model(
@@ -358,7 +358,7 @@ def seed():
                 print_time_hours=6.0,
                 printer_id=printer3.printer_id,
                 model_file="src/app/model_files/dna_model.3tl",
-		        #model_image="src/app/model_images/dna_model.png"
+		        model_image="src/app/model_images/dna_model.png"
             )
 
             globe_earth = Model(
@@ -370,7 +370,7 @@ def seed():
                 print_time_hours=6.0,
                 printer_id=printer3.printer_id,
                 model_file="src/app/model_files/earth_model.3tl",
-		        #model_image="src/app/model_images/earth_model.png"
+		        model_image="src/app/model_images/earth_model.png"
             )
 
             db.add_all([desk_vase, tree_ornament, d20_dice, chess_queen, iron_man, bat_man, cable_clip, tool_hammer, helmet_prop, pylon_prop, dna_model, globe_earth])

@@ -73,6 +73,7 @@ class Printer(Base):
     printer_id = Column(Integer, primary_key=True, autoincrement=True)
     filament_id = Column(Integer, ForeignKey("filament.filament_id"))
     printer_type_id = Column(Integer, ForeignKey("printer_type.printer_type_id"))
+    printer_queue = Column(Integer)
 
     filament = relationship("Filament", back_populates="printers")
     printer_type = relationship("PrinterType", back_populates="printers")
@@ -105,6 +106,7 @@ class Model(Base):
     model_height = Column(Float)
     model_description = Column(Text)
     model_file = Column(String(500))
+    model_image = Column(String(500))
     print_time_hours = Column(DECIMAL(6, 2))
 
     printer_id = Column(Integer, ForeignKey("printer.printer_id"))

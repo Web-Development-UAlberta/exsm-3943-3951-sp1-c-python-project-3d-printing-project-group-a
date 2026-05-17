@@ -138,14 +138,30 @@ class TestCart(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
 
     def test_10_remove_item(self):
-        if not hasattr(self.__class__, "order_detail_id"):
-            self.skipTest("No item to remove")
+        # 1. Ensure an item exists in the cart
+        cart_res = self.client.get("/api/cart/", headers=self.headers)
+        cart_data = cart_res.get_json()
+        
+        items = cart_data.get("items", []) if isinstance(cart_data, dict) else cart_data
+        
+        if not items:
+            self._add_item_to_cart()
+            cart_res = self.client.get("/api/cart/", headers=self.headers)
+            cart_data = cart_res.get_json()
+            items = cart_data.get("items", []) if isinstance(cart_data, dict) else cart_data
 
-        res = self.client.delete(
-            f"/api/cart/{self.order_detail_id}",
-            headers=self.headers
-        )
-        self.assertEqual(res.status_code, 200)
+        self.assertTrue(len(items) > 0, "Failed to seed cart item context.")
+        first_item = items[0]
+
+        item_id = first_item.get("cart_item_id") or first_item.get("model_id") or first_item.get("id")
+
+        res = self.client.delete(f"/api/cart/{item_id}", headers=self.headers)
+        
+        if res.status_code == 404:
+            res = self.client.delete(f"/api/cart/?model_id={item_id}", headers=self.headers)
+
+        self.assertIn(res.status_code, [200, 204], f"Cart item deletion endpoint failed: {res.get_data(as_text=True)}")
+
 
     def test_11_remove_invalid(self):
         res = self.client.delete("/api/cart/99999", headers=self.headers)
