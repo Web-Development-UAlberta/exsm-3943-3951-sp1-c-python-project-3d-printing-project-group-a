@@ -85,7 +85,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-  
   const handleSearch = async () => {
     setLoading(true);
     try {
