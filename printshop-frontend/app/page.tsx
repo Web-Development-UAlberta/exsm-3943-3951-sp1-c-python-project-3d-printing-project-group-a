@@ -85,6 +85,7 @@ export default function Home() {
       setLoading(false);
     }
   };
+  
   const handleSearch = async () => {
     setLoading(true);
     try {
@@ -265,7 +266,7 @@ export default function Home() {
                           </span>
                         );
                       })}
-                      {model.filaments?.map((f: any) => (
+                      {Array.from(new Map(model.filaments?.map(f => [f.material_name, f])).values()).map((f) => (
                         <span
                           key={f.filament_id}
                           className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"
