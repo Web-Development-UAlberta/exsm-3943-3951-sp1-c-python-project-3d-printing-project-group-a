@@ -73,7 +73,7 @@ class Printer(Base):
     printer_id = Column(Integer, primary_key=True, autoincrement=True)
     filament_id = Column(Integer, ForeignKey("filament.filament_id"))
     printer_type_id = Column(Integer, ForeignKey("printer_type.printer_type_id"))
-    printer_queue = Column(Integer)
+    printer_queue = Column(Float)
 
     filament = relationship("Filament", back_populates="printers")
     printer_type = relationship("PrinterType", back_populates="printers")
@@ -157,9 +157,11 @@ class OrderHeader(Base):
     payment_status = Column(Enum("Pending", "Succeeded", "Failed"))
 
     user_id = Column(Integer, ForeignKey("users.user_id"))
+    printer_id = Column(Integer, ForeignKey("printer.printer_id"), nullable=True)
 
     user = relationship("User", back_populates="orders")
     details = relationship("OrderDetail", back_populates="order_header")
+    printer = relationship("Printer")
 
 
 # Order Detail
