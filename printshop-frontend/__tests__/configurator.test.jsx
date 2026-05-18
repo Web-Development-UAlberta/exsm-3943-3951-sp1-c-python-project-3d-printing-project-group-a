@@ -2,12 +2,14 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import ConfiguratorPage from "../app/product/[id]/page";
 
+jest.mock("next/navigation", () => ({
+  useParams: () => ({ id: "1" }),
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
 describe("Configurator Page", () => {
   it("renders the configurator page", () => {
-    render(<ConfiguratorPage params={{ id: "1" }} />);
-    expect(screen.getByText("Configurator")).toBeInTheDocument();
-    expect(screen.getByText("Custom dimensions")).toBeInTheDocument();
-    expect(screen.getByText("Add to Cart →")).toBeInTheDocument();
-    expect(screen.getByText("Live price breakdown")).toBeInTheDocument();
+    render(<ConfiguratorPage />);
+    expect(screen.getByText("Loading model...")).toBeInTheDocument();
   });
 });

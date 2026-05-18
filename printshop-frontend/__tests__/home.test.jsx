@@ -7,7 +7,6 @@ describe("Home Page", () => {
     render(<Home />);
     expect(screen.getByText("Browse by category")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Search models...")).toBeInTheDocument();
-    expect(screen.getByText("Model library")).toBeInTheDocument();
-    expect(screen.getByText("Desk Vase")).toBeInTheDocument();
+    expect(screen.getByText("Loading models...")).toBeInTheDocument();
   });
 });

@@ -1,9 +1,10 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for
 from ..database import get_db
 from ..models import Model, Filament, ModelTag, ModelFilament
 from ..services.pricing import calculate_quote
 from werkzeug.utils import secure_filename
 import os
+import json
 
 models_bp = Blueprint("models", __name__)
 
@@ -23,15 +24,12 @@ def get_models():
             # SAFE FILTERING (NO outer joins)
             if tag_id:
                 query = query.join(ModelTag).filter(ModelTag.tag_id == tag_id)
-
             if filament_id:
                 query = query.join(ModelFilament).filter(
                     ModelFilament.filament_id == filament_id
                 )
-
             if search:
                 query = query.filter(Model.model_name.ilike(f"%{search}%"))
-
             if order == "asc":
                 query = query.order_by(Model.model_name.asc())
             elif order == "desc":
@@ -75,44 +73,70 @@ def get_models():
 
 @models_bp.route("/upload", methods=["POST"])
 def custom_upload():
-    CUSTOM_UPLOAD = "src/app/model_files/"
-    ALLOWED_FILE_EXTENSIONS = {"stl", "3mf", "3tl"}
+    CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
+    MODEL_IMAGES = os.getenv('MODEL_IMAGES')
+    #CUSTOM_UPLOAD = "src/app/model_files/"
+    ALLOWED_FILE_EXTENSIONS = {'stl', '3mf'}
 
     def extension_check(filename):
-        return (
-            "." in filename and
-            filename.rsplit(".", 1)[1].lower() in ALLOWED_FILE_EXTENSIONS
-        )
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_FILE_EXTENSIONS
 
     try:
-        if "file" not in request.files:
+        if 'file' not in request.files:
             return jsonify({"error": "No file"}), 400
-
-        file = request.files["file"]
-
-        if file.filename == "":
+        file = request.files['file']
+        if file.filename == '':
             return jsonify({"error": "No file selected"}), 400
-
-        if not extension_check(file.filename):
-            return jsonify({
-                "error": "File extension not supported",
-                "filename": file.filename
-            }), 400
-
-        os.makedirs(CUSTOM_UPLOAD, exist_ok=True)
-
-        filename = secure_filename(file.filename)
-        save_path = os.path.join(CUSTOM_UPLOAD, filename)
-        file.save(save_path)
-
-        return jsonify({
-            "message": "File uploaded",
-            "filename": filename
-        }), 200
-
+        if file and extension_check(file.filename):
+            if file:
+                filename = secure_filename(file.filename)
+                save_path = os.path.join(CUSTOM_UPLOAD, filename)
+                file.save(save_path)
+                #return jsonify({"message": "File uploaded", "filename": file.filename}), 200
+                custom_image = f"{MODEL_IMAGES}custom_print.png"
+                data = {
+                    "message": "File uploaded",
+                    "model_name": save_path,
+                    "model_description": "Custom Print",
+                    "model_length": 100,
+                    "model_width": 100,
+                    "model_height": 100,
+                    "model_file": save_path,
+                    "printer_id": 1,
+                    "print_time_hours": 3,
+                    "model_image": custom_image,
+                }
+                return jsonify(data), 200
+        else:
+            return jsonify({"error": "File extension not supported", "filename": file.filename}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+    
+@models_bp.route("/upload_model", methods=["POST"])
+def add_model():
+    info = request.get_json()
+    try:
+        with get_db() as db:
+            model = Model(
+                model_name = info["model_name"],
+                model_length = info["model_length"],
+                model_width = info["model_width"],
+                model_height = info["model_height"],
+                model_description = info["model_description"],
+                print_time_hours = info["print_time_hours"],
+                printer_id = info["printer_id"]
+            )
+            db.add(model)
+            db.flush()
 
+            return jsonify({
+                "message":  "Model added",
+                "model_id": model.model_id
+            }), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @models_bp.route("/quote", methods=["POST"])
 def get_quote():
@@ -257,6 +281,6 @@ def get_model(model_id):
                 "tags": tags,
                 "filaments": filaments
             }), 200
-
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -1,37 +1,28 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { apiGet, apiDelete } from "../lib/api";
 
 export default function CartPage() {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "Desk Vase",
-      material: "PLA",
-      color: "Black",
-      price: 75.16,
-      qty: 1,
-    },
-    {
-      id: 2,
-      name: "D20 Dice",
-      material: "PETG",
-      color: "Blue",
-      price: 42.0,
-      qty: 2,
-    },
-    {
-      id: 3,
-      name: "Cable Clip",
-      material: "PLA",
-      color: "White",
-      price: 18.75,
-      qty: 1,
-    },
-  ]);
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const shipping = 10;
+  useEffect(() => {
+    const loadCart = async () => {
+      try {
+        const data = await apiGet("/cart");
+        setItems(data.items || data);
+      } catch (err: any) {
+        console.log("Could not load cart");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCart();
+  }, []);
 
   const updateQty = (id: number, change: number) => {
     setItems(
@@ -52,19 +43,38 @@ export default function CartPage() {
     );
   };
 
-  const removeItem = (id: number) => {
+  const removeItem = async (id: number) => {
+    try {
+      await apiDelete(`/cart/${id}`);
+    } catch (err: any) {
+      console.log("Could not remove item from cart");
+    }
     setItems(items.filter((item) => item.id !== id));
   };
 
-  const cancelCart = () => {
+  const cancelCart = async () => {
+    try {
+      await apiDelete("/cart");
+    } catch (err: any) {
+      console.log("Backend not available, clearing locally");
+    }
     setItems([]);
   };
-
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const shipping = 10;
 
   const total = subtotal + shipping;
 
-  // Replace the JSX return from your component with the following:
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading cart...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -139,7 +149,7 @@ export default function CartPage() {
                     key={item.id}
                     className="bg-white border rounded-lg shadow-sm p-4 flex gap-4 items-center"
                   >
-                    <div className="flex-shrink-0 h-24 w-24 rounded-md bg-gray-100 border flex items-center justify-center text-sm text-gray-500">
+                    <div className="shrink-0 h-24 w-24 rounded-md bg-gray-100 border flex items-center justify-center text-sm text-gray-500">
                       [img]
                     </div>
 

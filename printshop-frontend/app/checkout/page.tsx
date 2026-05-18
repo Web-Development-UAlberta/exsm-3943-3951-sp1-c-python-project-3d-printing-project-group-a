@@ -1,37 +1,58 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiGet, apiPost } from "../lib/api";
 
 export default function CheckoutPage() {
-  const items = [
-    {
-      name: "Desk Vase",
-      material: "PLA",
-      color: "Black",
-      price: 75.16,
-    },
-    {
-      name: "D20 Dice x2",
-      material: "PETG",
-      color: "Blue",
-      price: 84.0,
-    },
-    {
-      name: "Cable Clip",
-      material: "PLA",
-      color: "White",
-      price: 18.75,
-    },
-  ];
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  useEffect(() => {
+    const loadCart = async () => {
+      try {
+        const data = await apiGet("/cart");
+        setItems(data.items || data);
+      } catch (err: any) {
+        console.log("Could not load cart");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCart();
+  }, []);
 
+  const subtotal = items.reduce((sum, item) => sum + (item.price || 0), 0);
   const shipping = 10;
   const total = subtotal + shipping;
 
-  const handlePlaceOrder = () => {
-    console.log("Order placed!");
+  const handlePlaceOrder = async () => {
+    setError("");
+    setPlacing(true);
+    try {
+      await apiPost("/checkout", {});
+      router.push("/orders");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setPlacing(false);
+    }
   };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading checkout...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -146,13 +167,25 @@ export default function CheckoutPage() {
               />
             </div>
 
+            {/* Error */}
+            {error && (
+              <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
             {/* Buttons */}
             <div className="flex gap-4">
               <button
                 onClick={handlePlaceOrder}
-                className="flex-1 rounded-xl bg-black py-3 text-sm font-semibold text-white transition hover:bg-gray-900"
+                disabled={placing}
+                className={`flex-1 rounded-xl py-3 text-sm font-semibold transition ${
+                  placing
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-black text-white hover:bg-gray-900"
+                }`}
               >
-                Place Order
+                {placing ? "Placing order..." : "Place Order"}
               </button>
 
               <Link

@@ -1,20 +1,48 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { apiGet, apiPut } from "@/app/lib/api";
 
 export default function EditProfilePage() {
   const [form, setForm] = useState({
-    username: "Robel_M",
-    fullName: "Robel Measho",
-    email: "R@email.com",
-    phone: "780-555-0101",
-    city: "Fox Creek",
-    street: "123 Main St",
-    province: "AB",
-    postalCode: "T5A 0A1",
+    username: "",
+    full_name: "",
+    email: "",
+    phone_number: "",
+    city: "",
+    street_address: "",
+    province: "",
+    postal_code: "",
   });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const data = await apiGet("/users/me");
+        setForm({
+          username: data.username || "",
+          full_name: data.full_name || "",
+          email: data.email || "",
+          phone_number: data.phone_number || "",
+          city: data.city || "",
+          street_address: data.street_address || "",
+          province: data.province || "",
+          postal_code: data.postal_code || "",
+        });
+      } catch (err: any) {
+        console.log("Could not load user");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUser();
+  }, []);
   const [passwords, setPasswords] = useState({
     current: "",
     newPass: "",
@@ -29,11 +57,41 @@ export default function EditProfilePage() {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    // later this will connect to Rami's backend
-    console.log("Save profile:", form);
-    console.log("Password change:", passwords);
+  const handleSave = async () => {
+    setError("");
+    setSuccess("");
+    setSaving(true);
+    try {
+      await apiPut("/users/me", form);
+      if (passwords.newPass) {
+        if (passwords.newPass !== passwords.confirm) {
+          setError("New passwords do not match");
+          setSaving(false);
+          return;
+        }
+        await apiPut("/users/me/password", {
+          current_password: passwords.current,
+          new_password: passwords.newPass,
+        });
+      }
+      setSuccess("Profile updated successfully!");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -71,8 +129,8 @@ export default function EditProfilePage() {
               Full name
             </label>
             <input
-              name="fullName"
-              value={form.fullName}
+              name="full_name"
+              value={form.full_name}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
@@ -95,8 +153,8 @@ export default function EditProfilePage() {
               Phone number
             </label>
             <input
-              name="phone"
-              value={form.phone}
+              name="phone_number"
+              value={form.phone_number}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
@@ -119,8 +177,8 @@ export default function EditProfilePage() {
                 Street address
               </label>
               <input
-                name="street"
-                value={form.street}
+                name="street_address"
+                value={form.street_address}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
               />
@@ -144,8 +202,8 @@ export default function EditProfilePage() {
                 Postal code
               </label>
               <input
-                name="postalCode"
-                value={form.postalCode}
+                name="postal_code"
+                value={form.postal_code}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
               />
@@ -278,12 +336,30 @@ export default function EditProfilePage() {
       </div>
 
       {/* Bottom buttons */}
+      {/* Messages */}
+      {success && (
+        <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-3">
+          <p className="text-sm text-green-700">{success}</p>
+        </div>
+      )}
+      {error && (
+        <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
+      {/* Bottom buttons */}
       <div className="flex gap-4 mt-6">
         <button
           onClick={handleSave}
-          className="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800"
+          disabled={saving}
+          className={`px-6 py-2.5 rounded-lg text-sm font-medium ${
+            saving
+              ? "bg-gray-400 text-white cursor-not-allowed"
+              : "bg-gray-900 text-white hover:bg-gray-800"
+          }`}
         >
-          Save changes
+          {saving ? "Saving..." : "Save changes"}
         </button>
         <Link
           href="/profile"
