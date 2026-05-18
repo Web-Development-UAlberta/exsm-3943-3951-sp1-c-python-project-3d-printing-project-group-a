@@ -4,8 +4,9 @@ from .extensions import jwt, bcrypt, cors
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__) 
     app.config.from_object(Config)
+    app.url_map.strict_slashes = False
 
     jwt.init_app(app)
     bcrypt.init_app(app)

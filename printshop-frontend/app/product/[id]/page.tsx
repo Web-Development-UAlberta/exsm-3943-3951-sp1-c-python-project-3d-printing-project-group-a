@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { apiGet, apiPost } from "../../lib/api";
+import Image from "next/image";
 
 export default function ConfiguratorPage() {
   const params = useParams();
@@ -131,17 +132,25 @@ export default function ConfiguratorPage() {
           )}
           <div className="space-y-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="mb-4 h-56 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center">
-                <span className="text-sm text-slate-400">
-                  [ 3D model preview ]
-                </span>
+              <div className="mb-4 h-56 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden flex items-center justify-center">
+                {model?.model_image ? (
+                  <img
+                    src={`http://127.0.0.1:5000/api/models/images/${model.model_image.split("/").pop()}`}
+                    alt={model.model_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-sm text-slate-400">
+                    [ 3D model preview ]
+                  </span>
+                )}
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
                   Selected model
                 </p>
                 <h2 className="mt-2 text-2xl font-medium text-slate-950">
-                  {model?.name || "Loading model"}
+                  {model?.model_name || "Loading model"}
                 </h2>
               </div>
             </div>
