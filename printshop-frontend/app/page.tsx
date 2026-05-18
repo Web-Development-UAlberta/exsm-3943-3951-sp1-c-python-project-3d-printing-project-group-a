@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { apiGet } from "./lib/api";
+import Image from "next/image";
 
 export default function Home() {
   const [search, setSearch] = useState("");
@@ -13,51 +14,34 @@ export default function Home() {
   const [models, setModels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tags, setTags] = useState<any[]>([]);
 
-  const categories = [
-    {
-      name: "All",
-      color: "bg-gray-900 text-white",
-      hover: "hover:bg-gray-800",
-      inactive: "bg-gray-100 text-gray-600 hover:bg-gray-200",
-    },
-    {
-      name: "Utilities",
+  const tagColors: Record<string, { color: string; inactive: string }> = {
+    Utilities: {
       color: "bg-blue-600 text-white",
-      hover: "hover:bg-blue-700",
       inactive: "bg-blue-50 text-blue-600 hover:bg-blue-100",
     },
-    {
-      name: "Gaming",
+    Gaming: {
       color: "bg-purple-600 text-white",
-      hover: "hover:bg-purple-700",
       inactive: "bg-purple-50 text-purple-600 hover:bg-purple-100",
     },
-    {
-      name: "Collectibles",
+    Collectibles: {
       color: "bg-yellow-500 text-white",
-      hover: "hover:bg-yellow-600",
       inactive: "bg-yellow-50 text-yellow-600 hover:bg-yellow-100",
     },
-    {
-      name: "Props",
+    Props: {
       color: "bg-teal-600 text-white",
-      hover: "hover:bg-teal-700",
-      inactive: "bg-teal-50 text-teal-600 hover:bg-red-100",
+      inactive: "bg-teal-50 text-teal-600 hover:bg--100",
     },
-    {
-      name: "Decorations",
+    Decorations: {
       color: "bg-pink-500 text-white",
-      hover: "hover:bg-pink-600",
       inactive: "bg-pink-50 text-pink-600 hover:bg-pink-100",
     },
-    {
-      name: "Education",
+    Education: {
       color: "bg-green-600 text-white",
-      hover: "hover:bg-green-700",
       inactive: "bg-green-50 text-green-600 hover:bg-green-100",
     },
-  ];
+  };
   const materials = ["All", "PLA", "PETG", "ABS", "TPU"];
 
   useEffect(() => {
@@ -69,6 +53,16 @@ export default function Home() {
     try {
       const data = await apiGet("/models");
       setModels(data);
+      // Extract unique tags from models
+      const allTags: any[] = [];
+      data.forEach((model: any) => {
+        model.tags?.forEach((tag: any) => {
+          if (!allTags.find((t) => t.tag_id === tag.tag_id)) {
+            allTags.push(tag);
+          }
+        });
+      });
+      setTags(allTags);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -76,14 +70,29 @@ export default function Home() {
     }
   };
 
+  const handleSearchWithCategory = async (tagId: number) => {
+    setLoading(true);
+    try {
+      let query = "/models?";
+      if (search) query += `search=${search}&`;
+      query += `tag_id=${tagId}&`;
+      if (activeMaterial !== "All") query += `material=${activeMaterial}&`;
+      const data = await apiGet(query);
+      setModels(data);
+    } catch (err: any) {
+      console.log("Could not filter");
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSearch = async () => {
     setLoading(true);
     try {
       let query = "/models?";
       if (search) query += `search=${search}&`;
       if (activeCategory !== "All") {
-        const tagIndex = categories.findIndex((c) => c.name === activeCategory);
-        if (tagIndex > 0) query += `tag_id=${tagIndex}&`;
+        const tag = tags.find((t) => t.tag_name === activeCategory);
+        if (tag) query += `tag_id=${tag.tag_id}&`;
       }
       if (activeMaterial !== "All") query += `material=${activeMaterial}&`;
       const data = await apiGet(query);
@@ -121,20 +130,44 @@ export default function Home() {
           Browse by category
         </h2>
         <div className="flex gap-2 flex-wrap">
-          {categories.map((cat) => (
-            <button
-              key={cat.name}
-              onClick={() => {
-                setActiveCategory(cat.name);
-                handleSearch();
-              }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                activeCategory === cat.name ? cat.color : cat.inactive
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
+          {/* All button */}
+          <button
+            onClick={() => {
+              setActiveCategory("All");
+              loadModels();
+            }}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              activeCategory === "All"
+                ? "bg-gray-900 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            All
+          </button>
+
+          {/* Dynamic tags from backend */}
+          {tags.map((tag) => {
+            const colors = tagColors[tag.tag_name] || {
+              color: "bg-gray-900 text-white",
+              inactive: "bg-gray-100 text-gray-600 hover:bg-gray-200",
+            };
+            return (
+              <button
+                key={tag.tag_id}
+                onClick={() => {
+                  setActiveCategory(tag.tag_name);
+                  handleSearchWithCategory(tag.tag_id);
+                }}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  activeCategory === tag.tag_name
+                    ? colors.color
+                    : colors.inactive
+                }`}
+              >
+                {tag.tag_name}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -201,8 +234,16 @@ export default function Home() {
                   href={`/product/${model.model_id}`}
                   className="border border-gray-200 rounded-lg bg-white hover:shadow-md"
                 >
-                  <div className="h-40 bg-gray-100 rounded-t-lg flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">[ preview ]</span>
+                  <div className="h-40 bg-gray-100 rounded-t-lg overflow-hidden flex items-center justify-center">
+                    {model.model_image ? (
+                      <img
+                        src={`http://127.0.0.1:5000/api/models/images/${model.model_image.split("/").pop()}`}
+                        alt={model.model_name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-400 text-sm">[ preview ]</span>
+                    )}
                   </div>
                   <div className="p-4">
                     <div className="flex justify-between items-center mb-2">
@@ -212,13 +253,13 @@ export default function Home() {
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {model.tags?.map((tag: any) => {
-                        const catColor = categories.find(
-                          (c) => c.name === tag.tag_name,
-                        );
+                        const colors = tagColors[tag.tag_name] || {
+                          inactive: "bg-gray-100 text-gray-600",
+                        };
                         return (
                           <span
                             key={tag.tag_id}
-                            className={`text-xs px-2 py-1 rounded-full ${catColor ? catColor.inactive : "bg-gray-100 text-gray-600"}`}
+                            className={`text-xs px-2 py-1 rounded-full ${colors.inactive}`}
                           >
                             {tag.tag_name}
                           </span>

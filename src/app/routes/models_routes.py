@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, redirect, url_for
+from flask import Blueprint, request, jsonify, send_from_directory, redirect, url_for
 from ..database import get_db
 from ..models import Model, Filament, ModelTag, ModelFilament
 from ..services.pricing import calculate_quote
@@ -61,6 +61,7 @@ def get_models():
                 result.append({
                     "model_id": m.model_id,
                     "model_name": m.model_name,
+                    "model_image": m.model_image,
                     "tags": tags,
                     "filaments": filaments
                 })
@@ -273,6 +274,7 @@ def get_model(model_id):
                 "model_length": model.model_length,
                 "model_width": model.model_width,
                 "model_height": model.model_height,
+                "model_image": model.model_image,
                 "print_time_hours": (
                     float(model.print_time_hours)
                     if model.print_time_hours is not None
@@ -284,3 +286,9 @@ def get_model(model_id):
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+    
+@models_bp.route("/images/<filename>")
+def serve_image(filename):
+    image_dir = os.path.join(os.path.dirname(__file__), "../model_images")
+    return send_from_directory(image_dir, filename)
