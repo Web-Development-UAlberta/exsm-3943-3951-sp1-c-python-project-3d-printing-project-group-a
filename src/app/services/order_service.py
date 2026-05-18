@@ -125,3 +125,39 @@ def clear_cart(db, user_id):
     db.flush()
     cart.total_price = float(cart.shipping_price)
     return cart
+
+def assign_printer_to_order(db, order, print_time_hours):
+    """
+    Assigns the order to the printer with least queue time.
+    Adds 10% buffer on top of estimated print time (slicer estimate + 10%).
+    Updates printer queue.
+    Returns estimated completion hours from now.
+    """
+    from ..models import Printer
+
+    # add 10% buffer to slicer estimate
+    buffered_time = float(print_time_hours) * 1.10
+
+    # find printer with least queue
+    printers = db.query(Printer).all()
+    if not printers:
+        raise ValueError("No printers available")
+
+    best_printer = min(printers, key=lambda p: float(p.printer_queue or 0))
+
+    # estimated completion = current queue + buffered print time
+    current_queue = float(best_printer.printer_queue or 0)
+    estimated_completion = round(current_queue + buffered_time, 2)
+
+    # update printer queue
+    best_printer.printer_queue = estimated_completion
+
+    # link order to printer
+    order.printer_id = best_printer.printer_id  
+
+    return {
+        "printer_id": best_printer.printer_id,
+        "printer_name": best_printer.printer_type.printer_name if best_printer.printer_type else None,
+        "estimated_hours": estimated_completion,
+        "print_time_with_buffer": buffered_time
+    }
