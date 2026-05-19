@@ -47,6 +47,7 @@ export default function ProfilePage() {
   }
 
   if (!user) return null;
+  const hasOrders = orders.length > 0;
 
   return (
     <div>
@@ -125,39 +126,59 @@ export default function ProfilePage() {
                 Status
               </th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">
-                Ship date
+                Date
+              </th>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700">
+                Total
               </th>
               <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700"></th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="border-t border-gray-100">
-                <td className="px-4 py-3 text-sm text-gray-500 font-medium">
-                  {order.order_header_id || order.id}
-                </td>
-                <td className="px-4 py-3 text-gray-500 text-sm">
-                  {order.item || order.model_name || "--"}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor[order.status]}`}
-                  >
-                    {order.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-500">
-                  {order.date}
-                </td>
-                <td className="px-4 py-3">
-                  {order.status === "Pending" && (
-                    <button className="text-xs text-red-600 font-medium hover:text-red-800">
-                      Cancel
-                    </button>
-                  )}
+            {!hasOrders ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-4 py-8 text-center text-sm text-gray-500"
+                >
+                  No orders yet
                 </td>
               </tr>
-            ))}
+            ) : (
+              orders.map((order) => (
+                <tr
+                  key={order.order_header_id || order.id}
+                  className="border-t border-gray-100"
+                >
+                  <td className="px-4 py-3 text-sm text-gray-500 font-medium">
+                    #{order.order_id || order.order_header_id || order.id}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 text-sm">
+                    {order.items?.[0]?.model || order.item || "--"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor[order.order_status || order.status] || "bg-gray-100 text-gray-600"}`}
+                    >
+                      {order.order_status || order.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-500">
+                    {order.order_date || "--"}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                    ${(order.total_price || 0).toFixed(2)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {order.order_status === "Pending" && (
+                      <button className="text-xs text-red-600 font-medium hover:text-red-800">
+                        Cancel
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

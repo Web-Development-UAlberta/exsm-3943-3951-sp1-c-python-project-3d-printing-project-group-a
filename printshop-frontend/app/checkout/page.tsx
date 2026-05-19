@@ -8,16 +8,19 @@ import { apiGet, apiPost } from "../lib/api";
 
 export default function CheckoutPage() {
   const [items, setItems] = useState<any[]>([]);
+  const [cartData, setCartData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
+
   const router = useRouter();
 
   useEffect(() => {
     const loadCart = async () => {
       try {
         const data = await apiGet("/cart");
-        setItems(data.items || data);
+        setItems(data.items || []);
+        setCartData(data);
       } catch (err: any) {
         console.log("Could not load cart");
       } finally {
@@ -27,15 +30,20 @@ export default function CheckoutPage() {
     loadCart();
   }, []);
 
-  const subtotal = items.reduce((sum, item) => sum + (item.price || 0), 0);
-  const shipping = 10;
-  const total = subtotal + shipping;
+  const shipping = cartData?.shipping_price || 10;
+  const total = cartData?.total_price || 0;
+  const subtotal = total - shipping;
 
   const handlePlaceOrder = async () => {
     setError("");
     setPlacing(true);
     try {
-      await apiPost("/checkout", {});
+      // Step 1 — create payment intent
+      const intent = await apiPost("/checkout/create-intent", {});
+      const payment_intent_id = intent.payment_intent_id;
+
+      // Step 2 — confirm order with payment intent
+      await apiPost("/checkout/confirm", { payment_intent_id });
       router.push("/orders");
     } catch (err: any) {
       setError(err.message);
@@ -179,7 +187,7 @@ export default function CheckoutPage() {
               <button
                 onClick={handlePlaceOrder}
                 disabled={placing}
-                className={`flex-1 rounded-xl py-3 text-sm font-semibold transition ${
+                className={`cursor-pointer flex-1 rounded-xl py-3 text-sm font-semibold transition ${
                   placing
                     ? "bg-gray-400 text-white cursor-not-allowed"
                     : "bg-black text-white hover:bg-gray-900"
@@ -228,16 +236,21 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <p className="font-medium text-gray-900">{item.name}</p>
-
+                      <p className="font-medium text-gray-900">
+                        {item.model_name || item.name || "Model"}
+                      </p>
                       <p className="mt-1 text-sm text-gray-500">
-                        {item.material} / {item.color}
+                        {item.material_name || "--"} — Scale:{" "}
+                        {item.scale || 100}%
                       </p>
                     </div>
                   </div>
 
                   <p className="font-semibold text-gray-900">
-                    ${item.price.toFixed(2)}
+                    $
+                    {(
+                      (item.unit_price || 0) * (item.order_quantity || 1)
+                    ).toFixed(2)}
                   </p>
                 </div>
               ))}
