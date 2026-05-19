@@ -219,35 +219,35 @@ export default function AdminPage() {
                         className={f.stock < 300 ? "bg-rose-50/50" : ""}
                       >
                         <td className="px-4 py-3 text-sm text-slate-900">
-                          {f.name}
+                          {f.material_name}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700">
-                          {f.color}
+                          {f.color_hex}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           <span
                             className={
-                              f.stock < 300
+                              f.quantity_in_stock < 300
                                 ? "font-medium text-rose-700"
                                 : "text-slate-700"
                             }
                           >
-                            {f.stock}g
+                            {f.quantity_in_stock}g
                           </span>
-                          {f.stock < 300 && (
+                          {f.quantity_in_stock < 300 && (
                             <span className="ml-2 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700">
                               LOW
                             </span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700">
-                          ${f.price}/kg
+                          ${f.filament_price}/kg
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700">
-                          {f.wear ? "Yes" : "No"}
+                          {f.more_wear_tear ? "Yes" : "No"}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-500">
-                          {f.lead}
+                          {f.finish_filament}
                         </td>
                       </tr>
                     ))}
@@ -274,7 +274,7 @@ export default function AdminPage() {
 
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                     <input
-                      placeholder="e.g. PLA"
+                      placeholder="Material: [PLA]"
                       value={newFilament.name}
                       onChange={(e) =>
                         setNewFilament({ ...newFilament, name: e.target.value })
@@ -282,7 +282,7 @@ export default function AdminPage() {
                       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
                     />
                     <input
-                      placeholder="e.g. Black"
+                      placeholder="Color: [#000000]"
                       value={newFilament.color}
                       onChange={(e) =>
                         setNewFilament({
@@ -293,7 +293,7 @@ export default function AdminPage() {
                       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
                     />
                     <input
-                      placeholder="e.g. 1000"
+                      placeholder="Quantity [1000]"
                       value={newFilament.stock}
                       onChange={(e) =>
                         setNewFilament({
@@ -304,7 +304,7 @@ export default function AdminPage() {
                       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
                     />
                     <input
-                      placeholder="e.g. 25"
+                      placeholder="Price [25]"
                       value={newFilament.price}
                       onChange={(e) =>
                         setNewFilament({
