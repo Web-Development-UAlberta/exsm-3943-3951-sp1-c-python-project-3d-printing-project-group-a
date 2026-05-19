@@ -8,13 +8,15 @@ import { apiGet, apiDelete } from "../lib/api";
 
 export default function CartPage() {
   const [items, setItems] = useState<any[]>([]);
+  const [cartData, setCartData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadCart = async () => {
       try {
         const data = await apiGet("/cart");
-        setItems(data.items || data);
+        setItems(data.items || []);
+        setCartData(data);
       } catch (err: any) {
         console.log("Could not load cart");
       } finally {
@@ -27,17 +29,11 @@ export default function CartPage() {
   const updateQty = (id: number, change: number) => {
     setItems(
       items.map((item) => {
-        if (item.id === id) {
-          const newQty = item.qty + change;
-
+        if (item.order_detail_id === id) {
+          const newQty = (item.order_quantity || 1) + change;
           if (newQty < 1) return item;
-
-          return {
-            ...item,
-            qty: newQty,
-          };
+          return { ...item, order_quantity: newQty };
         }
-
         return item;
       }),
     );
@@ -46,10 +42,10 @@ export default function CartPage() {
   const removeItem = async (id: number) => {
     try {
       await apiDelete(`/cart/${id}`);
+      setItems(items.filter((item) => item.order_detail_id !== id));
     } catch (err: any) {
       console.log("Could not remove item from cart");
     }
-    setItems(items.filter((item) => item.id !== id));
   };
 
   const cancelCart = async () => {
@@ -60,10 +56,9 @@ export default function CartPage() {
     }
     setItems([]);
   };
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const shipping = 10;
-
-  const total = subtotal + shipping;
+  const shipping = cartData ? cartData.shipping_price : 10;
+  const total = cartData ? cartData.total_price : 0;
+  const subtotal = total - shipping;
 
   if (loading) {
     return (
@@ -146,7 +141,7 @@ export default function CartPage() {
               <div className="space-y-4">
                 {items.map((item) => (
                   <div
-                    key={item.id}
+                    key={item.order_detail_id || item.id}
                     className="bg-white border rounded-lg shadow-sm p-4 flex gap-4 items-center"
                   >
                     <div className="shrink-0 h-24 w-24 rounded-md bg-gray-100 border flex items-center justify-center text-sm text-gray-500">
@@ -157,19 +152,27 @@ export default function CartPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="text-xl text-black font-medium">
-                            {item.name}
+                            {item.model_name || item.name || "Model"}
                           </h3>
                           <p className="text-sm text-blue-600 font-medium mt-1">
-                            {item.material} / {item.color}
+                            {item.material_name || item.material || "--"} —
+                            Scale: {item.scale || 100}% — Infill:{" "}
+                            {item.infill_percent || 50}%
                           </p>
                         </div>
 
                         <div className="text-right">
                           <div className="text-lg text-gray-800 font-medium">
-                            ${(item.price * item.qty).toFixed(2)}
+                            $
+                            {(
+                              (item.unit_price || item.price || 0) *
+                              (item.order_quantity || item.qty || 1)
+                            ).toFixed(2)}
                           </div>
                           <button
-                            onClick={() => removeItem(item.id)}
+                            onClick={() =>
+                              removeItem(item.order_detail_id || item.id)
+                            }
                             className="mt-2 text-sm text-red-600 hover:underline"
                           >
                             Remove
@@ -180,17 +183,21 @@ export default function CartPage() {
                       <div className="mt-3 flex items-center gap-4">
                         <div className="inline-flex items-center rounded-md border bg-white">
                           <button
-                            onClick={() => updateQty(item.id, -1)}
+                            onClick={() =>
+                              updateQty(item.order_detail_id || item.id, -1)
+                            }
                             aria-label="decrease"
                             className="px-3 py-2 text-gray-700 hover:bg-gray-50"
                           >
                             −
                           </button>
                           <div className="px-4 py-2 text-sm text-gray-900">
-                            {item.qty}
+                            {item.order_quantity || item.qty || 1}
                           </div>
                           <button
-                            onClick={() => updateQty(item.id, 1)}
+                            onClick={() =>
+                              updateQty(item.order_detail_id || item.id, 1)
+                            }
                             aria-label="increase"
                             className="px-3 py-2 text-gray-700 hover:bg-gray-50"
                           >
@@ -199,7 +206,8 @@ export default function CartPage() {
                         </div>
 
                         <div className="text-sm text-gray-500">
-                          Unit: ${item.price.toFixed(2)}
+                          Unit: $
+                          {(item.unit_price || item.price || 0).toFixed(2)}
                         </div>
                       </div>
                     </div>

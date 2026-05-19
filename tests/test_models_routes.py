@@ -329,7 +329,7 @@ class TestModelsRoutes(unittest.TestCase):
             "filament_id": 2,
             "scale": 50,
             "infill_percent": 50,
-            "color_count": 2
+            "color_count": 5
         })
         self.assertEqual(res.status_code, 200)
         json_list = res.get_json()

@@ -56,7 +56,12 @@ class TestPricing(unittest.TestCase):
         self.assertGreater(quote_5["multicolor_surcharge"], 0.0)
 
     def test_multicolor_surcharge_not_applied_below_5(self):
-        for count in [2, 3, 4, 5]:
+        for count in [1, 2, 3, 4,]:
+            quote = self.base_quote(color_count=count)
+            self.assertEqual(quote["multicolor_surcharge"], 0.0)
+            
+    def test_multicolor_surcharge_applied_at_5_or_more(self):
+        for count in [5, 6]:
             quote = self.base_quote(color_count=count)
             self.assertGreater(quote["multicolor_surcharge"], 0.0)
 

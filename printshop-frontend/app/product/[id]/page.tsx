@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { apiGet, apiPost } from "../../lib/api";
-import Image from "next/image";
 
 export default function ConfiguratorPage() {
   const params = useParams();
@@ -25,17 +24,13 @@ export default function ConfiguratorPage() {
   const [color, setColor] = useState("Black");
   const [multiColor, setMultiColor] = useState(false);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [dimensions, setDimensions] = useState({
-    length: 120,
-    width: 80,
-    height: 95,
-  });
 
   useEffect(() => {
     const loadModel = async () => {
       try {
         const data = await apiGet(`/models/${id}`);
         setModel(data);
+
         if (data.filaments && data.filaments.length > 0) {
           setSelectedFilament(data.filaments[0]);
         }
@@ -47,7 +42,6 @@ export default function ConfiguratorPage() {
     };
     loadModel();
   }, [id]);
-
   const materials = ["PLA", "PETG", "ABS", "TPU"];
   const colors = ["Black", "White", "Blue", "Red", "Grey", "Green"];
 
@@ -59,34 +53,37 @@ export default function ConfiguratorPage() {
     });
   };
 
-  const baseGrams = 45;
-  const scaledGrams = baseGrams * Math.pow(scale / 100, 3);
-  const withWaste = scaledGrams * 1.2;
-
-  const pricePerKg =
-    material === "PLA"
-      ? 25
-      : material === "PETG"
-        ? 32
-        : material === "ABS"
-          ? 28
-          : 38;
-
-  const materialCost = (withWaste / 1000) * pricePerKg;
-  const printTimeHrs = 0.5;
-  const machineCost = printTimeHrs * 10;
-  const overhead = machineCost * 0.15;
-  const subtotal = materialCost + machineCost + overhead;
-
-  const surcharge =
-    multiColor && selectedColors.length > 4 ? subtotal * 0.05 : 0;
-  const total = (subtotal + surcharge) * 1.25;
+  const [quote, setQuote] = useState<any>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
   const shipping = 10.0;
 
+  useEffect(() => {
+    if (!model || !selectedFilament) return;
+    const getQuote = async () => {
+      setQuoteLoading(true);
+      try {
+        const data = await apiPost("/models/quote", {
+          model_id: model.model_id,
+          filament_id: selectedFilament.filament_id,
+          scale: scale,
+          infill_percent: infill,
+          color_count: multiColor ? Math.max(selectedColors.length, 1) : 1,
+        });
+        setQuote(data);
+      } catch (err: any) {
+        console.log("Quote error:", err.message);
+      } finally {
+        setQuoteLoading(false);
+      }
+    };
+    const timer = setTimeout(getQuote, 300);
+    return () => clearTimeout(timer);
+  }, [model, selectedFilament, scale, infill, multiColor, selectedColors]);
+
   const dimWarning =
-    dimensions.length > 500 ||
-    dimensions.width > 500 ||
-    dimensions.height > 500;
+    (model?.model_length || 0) > 500 ||
+    (model?.model_width || 0) > 500 ||
+    (model?.model_height || 0) > 500;
 
   if (loading) {
     return (
@@ -157,39 +154,33 @@ export default function ConfiguratorPage() {
 
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <h3 className="text-sm font-medium uppercase tracking-[0.16em] text-slate-500">
-                Custom dimensions
+                Model dimensions
               </h3>
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <p className="text-xs text-slate-400 mt-1 mb-3">
+                Read from model file
+              </p>
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {[
-                  { label: "Length", key: "length" as const },
-                  { label: "Width", key: "width" as const },
-                  { label: "Height", key: "height" as const },
+                  { label: "Length", value: model?.model_length },
+                  { label: "Width", value: model?.model_width },
+                  { label: "Height", value: model?.model_height },
                 ].map((d) => (
                   <div
-                    key={d.key}
+                    key={d.label}
                     className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
                   >
                     <p className="text-xs text-slate-500">{d.label}</p>
-                    <input
-                      type="number"
-                      value={dimensions[d.key]}
-                      onChange={(e) =>
-                        setDimensions({
-                          ...dimensions,
-                          [d.key]: Number(e.target.value),
-                        })
-                      }
-                      className="mt-2 w-full bg-transparent text-sm font-medium text-slate-900 outline-none"
-                    />
+                    <p className="mt-2 text-sm font-medium text-slate-900">
+                      {d.value}
+                    </p>
                     <p className="mt-1 text-xs text-slate-400">mm</p>
                   </div>
                 ))}
               </div>
-
               {dimWarning && (
                 <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
                   <p className="text-sm text-amber-900">
-                    Warning: keep each side at 500mm or less.
+                    Warning: dimensions exceed 500mm per side.
                   </p>
                 </div>
               )}
@@ -201,9 +192,14 @@ export default function ConfiguratorPage() {
               </h3>
               <div className="mt-4">
                 <input
-                  type="number"
+                  type="text"
                   value={scale}
-                  onChange={(e) => setScale(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, "");
+                    if (val === "") setScale(0);
+                    else setScale(Math.min(Number(val), 200));
+                  }}
+                  onFocus={(e) => e.target.select()}
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
                   placeholder="e.g. 100"
                 />
@@ -283,8 +279,7 @@ export default function ConfiguratorPage() {
                     Multi-color print
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">
-                    Up to 4 colors has no extra charge. More than 4 colors adds
-                    5%.
+                    5 or more colors adds 5% surcharge.
                   </p>
                 </div>
                 <button
@@ -344,9 +339,9 @@ export default function ConfiguratorPage() {
 
               <p className="mt-3 text-xs text-slate-500">
                 {multiColor
-                  ? selectedColors.length > 4
+                  ? selectedColors.length >= 5
                     ? "ON — 5% surcharge applied"
-                    : "ON — no extra charge for 4 colors or less"
+                    : "ON — no extra charge for under 5 colors"
                   : "OFF — click to enable"}
               </p>
             </div>
@@ -357,7 +352,7 @@ export default function ConfiguratorPage() {
                 try {
                   await apiPost("/cart", {
                     model_id: Number(id),
-                    filament_id: 1,
+                    filament_id: selectedFilament?.filament_id || 1,
                     scale: scale,
                     infill_percent: infill,
                     color_count: multiColor ? selectedColors.length : 1,
@@ -390,8 +385,8 @@ export default function ConfiguratorPage() {
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-sm text-slate-500">Dimensions</span>
                   <span className="text-sm text-slate-900">
-                    {dimensions.length} x {dimensions.width} x{" "}
-                    {dimensions.height} mm
+                    {model?.model_length} x {model?.model_width} x{" "}
+                    {model?.model_height} mm
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
@@ -404,11 +399,15 @@ export default function ConfiguratorPage() {
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-sm text-slate-500">Material</span>
-                  <span className="text-sm text-slate-900">{material}</span>
+                  <span className="text-sm text-slate-900">
+                    {selectedFilament?.material_name || "--"}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-sm text-slate-500">Color</span>
-                  <span className="text-sm text-slate-900">{color}</span>
+                  <span className="text-sm text-slate-900">
+                    {selectedFilament?.color_hex || "--"}
+                  </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-sm text-slate-500">Multi-color</span>
@@ -419,69 +418,93 @@ export default function ConfiguratorPage() {
                   </span>
                 </div>
               </div>
+              {quoteLoading ? (
+                <div className="mt-6 rounded-2xl bg-slate-50 p-6 text-center">
+                  <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-xs text-slate-500">Calculating price...</p>
+                </div>
+              ) : quote ? (
+                <>
+                  <div className="mt-6 rounded-2xl bg-slate-50 p-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-500">
+                          Material required
+                        </span>
+                        <span className="text-sm text-slate-900">
+                          {quote.material_grams} g
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-500">
+                          Material cost
+                        </span>
+                        <span className="text-sm text-slate-900">
+                          ${quote.material_cost}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-500">
+                          Print time
+                        </span>
+                        <span className="text-sm text-slate-900">
+                          {quote.print_hours} hrs
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-500">
+                          Machine cost
+                        </span>
+                        <span className="text-sm text-slate-900">
+                          ${quote.machine_cost}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-500">Overhead</span>
+                        <span className="text-sm text-slate-900">
+                          ${quote.overhead}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-slate-500">Overhead</span>
+                        <span className="text-sm text-slate-900">
+                          ${quote.overhead_cost}
+                        </span>
+                      </div>
+                      {quote.multicolor_surcharge > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-slate-500">
+                            Multi-color surcharge
+                          </span>
+                          <span className="text-sm text-slate-900">
+                            ${quote.multicolor_surcharge}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-              <div className="mt-6 rounded-2xl bg-slate-50 p-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-500">
-                      Material required
-                    </span>
-                    <span className="text-sm text-slate-900">
-                      {withWaste.toFixed(1)} g
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-500">
-                      Material cost
-                    </span>
-                    <span className="text-sm text-slate-900">
-                      ${materialCost.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-500">Print time</span>
-                    <span className="text-sm text-slate-900">
-                      {printTimeHrs} hrs
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-500">Machine cost</span>
-                    <span className="text-sm text-slate-900">
-                      ${machineCost.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-500">Overhead</span>
-                    <span className="text-sm text-slate-900">
-                      ${overhead.toFixed(2)}
-                    </span>
-                  </div>
-                  {multiColor && selectedColors.length > 4 && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-slate-500">
-                        Multi-color surcharge
+                  <div className="mt-6 border-t border-slate-200 pt-5">
+                    <div className="flex items-end justify-between">
+                      <span className="text-sm uppercase tracking-[0.18em] text-slate-500">
+                        Total
                       </span>
-                      <span className="text-sm text-slate-900">
-                        ${surcharge.toFixed(2)}
+                      <span className="text-3xl font-medium text-slate-950">
+                        ${quote.total}
                       </span>
                     </div>
-                  )}
+                    <p className="mt-1 text-xs text-slate-400">
+                      All costs included in total.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="mt-6 rounded-2xl bg-slate-50 p-6 text-center">
+                  <p className="text-sm text-slate-500">
+                    Select options to see pricing
+                  </p>
                 </div>
-              </div>
-
-              <div className="mt-6 border-t border-slate-200 pt-5">
-                <div className="flex items-end justify-between">
-                  <span className="text-sm uppercase tracking-[0.18em] text-slate-500">
-                    Total
-                  </span>
-                  <span className="text-3xl font-medium text-slate-950">
-                    ${total.toFixed(2)}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-slate-400">
-                  All costs included in total.
-                </p>
-              </div>
+              )}
 
               <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 p-4">
                 <div className="flex justify-between gap-4">
