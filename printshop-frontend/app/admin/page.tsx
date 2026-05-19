@@ -280,7 +280,7 @@ export default function AdminPage() {
 
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                     <input
-                      placeholder="e.g. PLA"
+                      placeholder="Material: [PLA]"
                       value={newFilament.name}
                       onChange={(e) =>
                         setNewFilament({ ...newFilament, name: e.target.value })
@@ -288,7 +288,7 @@ export default function AdminPage() {
                       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
                     />
                     <input
-                      placeholder="e.g. Black"
+                      placeholder="Color: [#000000]"
                       value={newFilament.color}
                       onChange={(e) =>
                         setNewFilament({
@@ -299,7 +299,7 @@ export default function AdminPage() {
                       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
                     />
                     <input
-                      placeholder="e.g. 1000"
+                      placeholder="Quantity [1000]"
                       value={newFilament.stock}
                       onChange={(e) =>
                         setNewFilament({
@@ -310,7 +310,7 @@ export default function AdminPage() {
                       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
                     />
                     <input
-                      placeholder="e.g. 25"
+                      placeholder="Price [25]"
                       value={newFilament.price}
                       onChange={(e) =>
                         setNewFilament({

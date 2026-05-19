@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { apiGet } from "../lib/api";
 
 const colorOptions = [
   { name: "Red", value: "red", className: "bg-red-500" },
@@ -21,6 +22,9 @@ export default function CustomUploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedColor, setSelectedColor] = useState("red");
   const [multiColorEnabled, setMultiColorEnabled] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [models, setModels] = useState<any[]>([]);
+  const [error, setError] = useState("");
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -40,13 +44,15 @@ export default function CustomUploadPage() {
 
   function handleUpload() {
     if (!selectedFile) return;
-
     setIsUploading(true);
-
     setTimeout(() => {
       console.log("Uploaded:", selectedFile.name);
       setIsUploading(false);
     }, 2000);
+    setTimeout(() => {
+      console.log("Redirecting to Configuration");
+      window.location.href = '/product/14';
+    }, 3000)
   }
 
   const currentColor =
