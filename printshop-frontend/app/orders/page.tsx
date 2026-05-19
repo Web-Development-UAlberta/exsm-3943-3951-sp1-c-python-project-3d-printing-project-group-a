@@ -17,7 +17,7 @@ export default function OrdersPage() {
         const data = await apiGet("/orders");
         setOrders(data);
         if (data.length > 0) {
-          setSelectedOrder(data[0].id || data[0].order_header_id);
+          setSelectedOrder(data[0].order_id);
         }
       } catch (err: any) {
         console.log("Could not load orders");
@@ -165,76 +165,86 @@ export default function OrdersPage() {
               </thead>
 
               <tbody>
-                {orders.map((order) => (
-                  <tr
-                    key={order.id}
-                    onClick={() => setSelectedOrder(order.id)}
-                    className={`cursor-pointer border-t border-gray-100 transition hover:bg-gray-50 ${
-                      selectedOrder === order.id ? "bg-blue-50" : "bg-white"
-                    }`}
-                  >
-                    <td className="px-6 py-5 text-sm font-semibold text-gray-900">
-                      {order.id}
-                    </td>
-
-                    <td className="px-6 py-5 text-sm text-gray-700">
-                      {order.item}
-                    </td>
-
-                    <td className="px-6 py-5">
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[order.status]}`}
-                      >
-                        {order.status}
-                      </span>
-                    </td>
-
-                    <td className="px-6 py-5 text-sm font-medium text-gray-900">
-                      ${order.total.toFixed(2)}
-                    </td>
-
-                    <td className="px-6 py-5 text-sm text-gray-500">
-                      {order.date}
-                    </td>
-
-                    <td className="px-6 py-5 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        {selectedOrder === order.id && (
-                          <span className="text-xs font-medium text-blue-600">
-                            Viewing
-                          </span>
-                        )}
-
-                        {order.status === "Pending" && (
-                          <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              try {
-                                await apiPut(
-                                  `/orders/${order.id || order.order_header_id}/cancel`,
-                                  {},
-                                );
-                                setOrders(
-                                  orders.map((o) =>
-                                    (o.id || o.order_header_id) ===
-                                    (order.id || order.order_header_id)
-                                      ? { ...o, status: "Cancelled" }
-                                      : o,
-                                  ),
-                                );
-                              } catch (err: any) {
-                                console.log("Could not cancel order");
-                              }
-                            }}
-                            className="text-sm font-medium text-red-600 transition hover:text-red-800"
-                          >
-                            Cancel
-                          </button>
-                        )}
-                      </div>
+                {orders.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-6 py-10 text-center text-sm text-gray-500"
+                    >
+                      No orders yet —{" "}
+                      <Link href="/" className="text-blue-600 underline">
+                        browse models
+                      </Link>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  orders.map((order) => (
+                    <tr
+                      key={order.order_id}
+                      onClick={() => setSelectedOrder(order.order_id)}
+                      className={`cursor-pointer border-t border-gray-100 transition hover:bg-gray-50 ${
+                        selectedOrder === order.order_id
+                          ? "bg-blue-50"
+                          : "bg-white"
+                      }`}
+                    >
+                      <td className="px-6 py-5 text-sm font-semibold text-gray-900">
+                        #{order.order_id}
+                      </td>
+                      <td className="px-6 py-5 text-sm text-gray-700">
+                        {order.items?.[0]?.model || "--"}
+                      </td>
+                      <td className="px-6 py-5">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[order.order_status || order.status] || "bg-gray-100 text-gray-600"}`}
+                        >
+                          {order.order_status || order.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-sm font-medium text-gray-900">
+                        ${(order.total_price || 0).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-5 text-sm text-gray-500">
+                        {order.order_date || "--"}
+                      </td>
+
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          {selectedOrder === order.id && (
+                            <span className="text-xs font-medium text-blue-600">
+                              Viewing
+                            </span>
+                          )}
+                          {order.order_status === "Pending" && (
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  await apiPut(
+                                    `/orders/${order.order_id}/cancel`,
+                                    {},
+                                  );
+                                  setOrders(
+                                    orders.map((o) =>
+                                      o.order_id === order.order_id
+                                        ? { ...o, order_status: "Cancelled" }
+                                        : o,
+                                    ),
+                                  );
+                                } catch (err: any) {
+                                  console.log("Could not cancel order");
+                                }
+                              }}
+                              className="text-sm font-medium text-red-600 transition hover:text-red-800"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -261,12 +271,15 @@ export default function OrdersPage() {
                 <span
                   className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                     statusStyles[
-                      orders.find((o) => o.id === selectedOrder)?.status ||
-                        "Pending"
-                    ]
+                      orders.find((o) => o.order_id === selectedOrder)
+                        ?.order_status || "Pending"
+                    ] || "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {orders.find((o) => o.id === selectedOrder)?.status}
+                  {
+                    orders.find((o) => o.order_id === selectedOrder)
+                      ?.order_status
+                  }
                 </span>
               </div>
 
@@ -275,7 +288,7 @@ export default function OrdersPage() {
                   <span className="text-gray-500">Order Date</span>
 
                   <span className="font-medium text-gray-900">
-                    {selected.orderDate}
+                    {selected.order_date || "--"}
                   </span>
                 </div>
 
@@ -283,7 +296,7 @@ export default function OrdersPage() {
                   <span className="text-gray-500">Completion Date</span>
 
                   <span className="font-medium text-gray-900">
-                    {selected.completion}
+                    {selected.completion || "--"}
                   </span>
                 </div>
 
@@ -291,18 +304,18 @@ export default function OrdersPage() {
                   <span className="text-gray-500">Ship Date</span>
 
                   <span className="font-medium text-gray-900">
-                    {selected.shipDate}
+                    {selected.tracking_number ? selected.order_date : "--"}
                   </span>
                 </div>
 
-                {selected.tracking && (
+                {selected.tracking_number && (
                   <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                     <p className="text-sm font-medium text-gray-700">
                       Tracking Number
                     </p>
 
                     <p className="mt-1 text-sm text-gray-900">
-                      {selected.tracking}
+                      {selected.tracking_number}
                     </p>
 
                     <Link
@@ -320,7 +333,11 @@ export default function OrdersPage() {
                     <span className="text-gray-500">Subtotal</span>
 
                     <span className="font-medium text-gray-900">
-                      ${selected.subtotal.toFixed(2)}
+                      $
+                      {(
+                        (selected.total_price || 0) -
+                        (selected.shipping_price || 10)
+                      ).toFixed(2)}
                     </span>
                   </div>
 
@@ -328,14 +345,22 @@ export default function OrdersPage() {
                     <span className="text-gray-500">Shipping</span>
 
                     <span className="font-medium text-gray-900">
-                      ${selected.shipping.toFixed(2)}
+                      $
+                      {(
+                        selected.shipping_price ||
+                        selected.shipping ||
+                        10
+                      ).toFixed(2)}
                     </span>
                   </div>
 
                   <div className="flex justify-between text-lg font-semibold text-gray-900">
                     <span>Total</span>
 
-                    <span>${selected.total.toFixed(2)}</span>
+                    <span>
+                      $
+                      {(selected.total_price || selected.total || 0).toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -354,36 +379,39 @@ export default function OrdersPage() {
               </div>
 
               <div className="space-y-4">
-                {selected.items.map((item: any, i: number) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between rounded-xl border border-gray-200 p-4"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 text-xs text-gray-400">
-                        IMG
+                {(selected.items || selected.order_details || []).map(
+                  (item: any, i: number) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-xl border border-gray-200 p-4"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 text-xs text-gray-400">
+                          IMG
+                        </div>
+
+                        <div>
+                          <h4 className="font-medium text-gray-900">
+                            {item.model || "Model"}
+                          </h4>
+                          <p className="mt-1 text-sm text-gray-500">
+                            {item.filament} — Scale: {item.scale || "--"}% —
+                            Infill: {item.infill || "--"}%
+                          </p>
+                        </div>
                       </div>
 
-                      <div>
-                        <h4 className="font-medium text-gray-900">
-                          {item.name}
-                        </h4>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                          Scale: {item.scale}
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500">
+                          Qty: {item.quantity || 1}
+                        </p>
+                        <p className="mt-1 font-semibold text-gray-900">
+                          ${(item.unit_price || 0).toFixed(2)}
                         </p>
                       </div>
                     </div>
-
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">Qty: {item.qty}</p>
-
-                      <p className="mt-1 font-semibold text-gray-900">
-                        ${item.sub.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             </div>
           </div>
