@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src"
 
 from src.app.models import (
     Base, User, Filament, PrinterType, Printer,
-    Tag, Model, ModelFilament, ModelTag, OrderHeader, OrderDetail
+    Tag, Model, ModelFilament, ModelTag, OrderHeader, OrderDetail, FilamentPrinter
 )
 
 
@@ -49,9 +49,18 @@ class TestModels(unittest.TestCase):
         )
 
     def make_printer(self):
-        filament     = Filament(material_name="PLA", filament_price=20.00)
+        # 1. Create a concrete filament instance first
+        filament = Filament(
+            material_name="PLA",
+            color_hex="#FFFFFF",
+            filament_price=20.00
+        )
+        
         printer_type = PrinterType(printer_name="MK4", max_size=500)
-        printer      = Printer(filament=filament, printer_type=printer_type)
+        printer = Printer(printer_type=printer_type)
+        
+        # 2. Pass the instantiated 'filament' object variable here
+        printer_filament = FilamentPrinter(printer=printer, filament=filament)
         return filament, printer_type, printer
 
     ## User Table
@@ -178,11 +187,13 @@ class TestModels(unittest.TestCase):
     # Validates printer foreign keys are successful
     def test_printer_relationship(self):
         filament, printer_type, printer = self.make_printer()
-        self.session.add(printer)
+        
+        self.session.add_all([printer, filament]) 
         self.session.commit()
 
-        result = self.session.query(Printer).first()
-        self.assertEqual(result.printer_type.printer_name, "MK4")
+        # Query the association model instead of Printer directly
+        result = self.session.query(FilamentPrinter).first()
+        self.assertEqual(result.printer.printer_type.printer_name, "MK4")
         self.assertEqual(result.filament.material_name, "PLA")
 
     ## Tags Table

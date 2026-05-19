@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, send_from_directory, redirect, url_for
 from ..database import get_db
-from ..models import Model, Filament, ModelTag, ModelFilament
+from ..models import Model, Filament, ModelTag, ModelFilament, FilamentPrinter
 from ..services.pricing import calculate_quote
 from werkzeug.utils import secure_filename
 import os
