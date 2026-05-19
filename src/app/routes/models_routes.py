@@ -23,19 +23,17 @@ def get_models():
 
             # SAFE FILTERING (NO outer joins)
             if tag_id:
-                query = query.join(ModelTag).filter(ModelTag.tag_id == tag_id)
+                query = query.join(ModelTag).filter(ModelTag.tag_id == tag_id).filter(Model.model_name.notlike('%custom product%'))
             if filament_id:
-                query = query.join(ModelFilament).filter(
-                    ModelFilament.filament_id == filament_id
-                )
+                query = query.join(ModelFilament).filter(ModelFilament.filament_id == filament_id).filter(Model.model_name.notlike('%custom product%'))
             if search:
-                query = query.filter(Model.model_name.ilike(f"%{search}%"))
+                query = query.filter(Model.model_name.ilike(f"%{search}%")).filter(Model.model_name.notlike('%custom product%'))
             if order == "asc":
                 query = query.order_by(Model.model_name.asc())
             elif order == "desc":
                 query = query.order_by(Model.model_name.desc())
 
-            models = query.all()   # ❗ REMOVE distinct()
+            models = query.filter(Model.model_name.notlike('%custom product%')).all()   # ❗ REMOVE distinct()
 
             result = []
 
