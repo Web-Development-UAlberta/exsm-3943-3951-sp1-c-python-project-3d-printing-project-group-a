@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddFilament, setShowAddFilament] = useState(false);
   const [newFilament, setNewFilament] = useState({
     name: "",
     color: "",
@@ -88,12 +89,12 @@ export default function AdminPage() {
     } catch (err: any) {
       console.log("Could not remove printer");
     }
-    setPrinters(printers.filter((p) => p.id !== id));
+    setPrinters(printers.filter((p) => p.printer_id !== id));
   };
 
   const toggleAdmin = async (id: number) => {
-    const user = users.find((u) => u.id || u.user_id === id);
-    const isAdmin = user?.is_admin || user?.isAdmin;
+    const user = users.find((u) => u.user_id === id);
+    const isAdmin = user?.is_admin;
     try {
       if (isAdmin) {
         await apiPut(`/admin/users/${id}/remove-admin`, {});
@@ -113,7 +114,7 @@ export default function AdminPage() {
   };
 
   const activeOrders = orders.filter(
-    (o) => o.status === "Printing" || o.status === "Pending",
+    (o) => o.order_status === "Printing" || o.order_status === "Pending",
   ).length;
   const lowStock = filaments.filter(
     (f) => (f.quantity_in_stock || f.stock || 0) < 300,
@@ -130,9 +131,6 @@ export default function AdminPage() {
         </div>
       </div>
     );
-  }
-  function setShowAddFilament(arg0: boolean): void {
-    throw new Error("Function not implemented.");
   }
 
   return (
@@ -181,7 +179,7 @@ export default function AdminPage() {
                   Filament inventory
                 </h2>
                 <button
-                  onClick={() => setShowAddFilament(!setShowAddFilament)}
+                  onClick={() => setShowAddFilament(!showAddFilament)}
                   className="cursor-pointer text-sm font-medium text-blue-700 hover:text-blue-800"
                 >
                   + Add filament
@@ -215,39 +213,47 @@ export default function AdminPage() {
                   <tbody className="divide-y divide-slate-100">
                     {filaments.map((f) => (
                       <tr
-                        key={f.id}
-                        className={f.stock < 300 ? "bg-rose-50/50" : ""}
+                        key={f.filament_id}
+                        className={
+                          f.quantity_in_stock < 300 ? "bg-rose-50/50" : ""
+                        }
                       >
                         <td className="px-4 py-3 text-sm text-slate-900">
-                          {f.name}
+                          {f.material_name}
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-700">
-                          {f.color}
-                        </td>
+                        <span className="flex items-center gap-2">
+                          {f.color_hex && (
+                            <div
+                              className="w-4 h-4 rounded-full border border-slate-300"
+                              style={{ backgroundColor: f.color_hex }}
+                            />
+                          )}
+                          {f.color_hex || "--"}
+                        </span>
                         <td className="px-4 py-3 text-sm">
                           <span
                             className={
-                              f.stock < 300
+                              f.quantity_in_stock < 300
                                 ? "font-medium text-rose-700"
                                 : "text-slate-700"
                             }
                           >
-                            {f.stock}g
+                            {f.quantity_in_stock}g
                           </span>
-                          {f.stock < 300 && (
+                          {f.quantity_in_stock < 300 && (
                             <span className="ml-2 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700">
                               LOW
                             </span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700">
-                          ${f.price}/kg
+                          ${f.filament_price}/kg
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700">
-                          {f.wear ? "Yes" : "No"}
+                          {f.more_wear_and_tear ? "Yes" : "No"}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-500">
-                          {f.lead}
+                          {f.manufacturer || "--"}
                         </td>
                       </tr>
                     ))}
@@ -261,7 +267,7 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              {setShowAddFilament && (
+              {showAddFilament && (
                 <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-slate-950">
@@ -373,7 +379,7 @@ export default function AdminPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {users.map((user) => (
-                      <tr key={user.id}>
+                      <tr key={user.user_id}>
                         <td className="px-4 py-3 text-sm text-slate-900">
                           {user.username}
                         </td>
@@ -383,24 +389,24 @@ export default function AdminPage() {
                         <td className="px-4 py-3">
                           <span
                             className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                              user.isAdmin
+                              user.is_admin
                                 ? "bg-violet-50 text-violet-700 ring-1 ring-violet-200"
                                 : "bg-slate-100 text-slate-600"
                             }`}
                           >
-                            {user.isAdmin ? "Admin" : "Customer"}
+                            {user.is_admin ? "Admin" : "Customer"}
                           </span>
                         </td>
                         <td className="px-4 py-3">
                           <button
                             onClick={() => toggleAdmin(user.user_id || user.id)}
                             className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                              user.isAdmin
+                              user.is_admin
                                 ? "bg-rose-50 text-rose-700 hover:bg-rose-100"
                                 : "bg-blue-50 text-blue-700 hover:bg-blue-100"
                             }`}
                           >
-                            {user.isAdmin ? "Remove admin" : "Make admin"}
+                            {user.is_admin ? "Remove admin" : "Make admin"}
                           </button>
                         </td>
                       </tr>
@@ -428,7 +434,7 @@ export default function AdminPage() {
               <div className="space-y-4">
                 {printers.map((printer) => (
                   <div
-                    key={printer.id}
+                    key={printer.printer_id}
                     className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${
                       printer.status === "Printing"
                         ? "border-blue-200"
@@ -443,19 +449,19 @@ export default function AdminPage() {
                       }`}
                     >
                       <span className="text-sm font-medium">
-                        {printer.name}
+                        {printer.printer_name} #{printer.printer_id}
                       </span>
                       <span className="text-sm font-medium">
                         {printer.status}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-4 px-4 py-4">
-                      {printer.job ? (
+                      {printer.current_order ? (
                         <p className="text-sm text-slate-700">
                           <span className="font-medium text-slate-900">
-                            Current job:{" "}
+                            Current order:{" "}
                           </span>
-                          {printer.job}
+                          #{printer.current_order} — {printer.filament}
                         </p>
                       ) : (
                         <p className="text-sm font-medium text-emerald-700">
@@ -463,7 +469,7 @@ export default function AdminPage() {
                         </p>
                       )}
                       <button
-                        onClick={() => removePrinter(printer.id)}
+                        onClick={() => removePrinter(printer.printer_id)}
                         className="cursor-pointer rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-100"
                       >
                         Remove
@@ -501,27 +507,53 @@ export default function AdminPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {orders.map((order) => (
-                      <tr key={order.id}>
+                      <tr key={order.order_id}>
                         <td className="px-4 py-3 text-sm text-slate-900">
-                          {order.id}
+                          #{order.order_id} — {order.username}
                         </td>
                         <td className="px-4 py-3">
                           <span
-                            className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColor[order.status]}`}
+                            className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColor[order.order_status] || "bg-gray-100 text-gray-600"}`}
                           >
-                            {order.status}
+                            {order.order_status}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700">
-                          ${order.total.toFixed(2)}
+                          ${(order.total_price || 0).toFixed(2)}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-500">
-                          {order.printer}
+                          {order.items?.[0]?.model || "--"}
                         </td>
                         <td className="px-4 py-3">
-                          <button className="cursor-pointer rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200">
-                            Update
-                          </button>
+                          <select
+                            defaultValue={order.order_status}
+                            onChange={async (e) => {
+                              try {
+                                await apiPut(
+                                  `/admin/orders/${order.order_id}`,
+                                  {
+                                    order_status: e.target.value,
+                                  },
+                                );
+                                setOrders(
+                                  orders.map((o) =>
+                                    o.order_id === order.order_id
+                                      ? { ...o, order_status: e.target.value }
+                                      : o,
+                                  ),
+                                );
+                              } catch (err: any) {
+                                console.log("Could not update order");
+                              }
+                            }}
+                            className="cursor-pointer rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Printing">Printing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                          </select>
                         </td>
                       </tr>
                     ))}
@@ -534,7 +566,4 @@ export default function AdminPage() {
       </div>
     </div>
   );
-}
-function setShowAddFilament(arg0: boolean) {
-  throw new Error("Function not implemented.");
 }
