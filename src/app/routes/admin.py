@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from datetime import date
 from ..database import get_db
-from ..models import (User, Filament, Printer, PrinterType, OrderHeader, OrderDetail, Model, Tag, ModelTag, ModelFilament)
+from ..models import (User, Filament, Printer, PrinterType, OrderHeader, OrderDetail, Model, Tag, ModelTag, ModelFilament, FilamentPrinter)
 from ..services.stock_service import get_low_stock_filaments, is_low_stock
 from ..utils.decorators import require_admin
 
@@ -134,16 +134,32 @@ def get_printers():
             printers = db.query(Printer).all()
             result = []
             for p in printers:
-                active_order = db.query(OrderHeader).filter_by(
-                    order_status="Printing"
-                ).join(OrderDetail).filter(
-                    OrderDetail.filament_id == p.filament_id
-                ).first()
+                # 1. Gather all filament IDs linked to this specific printer
+                printer_filament_ids = [link.filament_id for link in p.filament_links if link.filament_id]
+                
+                # 2. Query active orders matching ANY of this printer's filaments
+                active_order = None
+                if printer_filament_ids:
+                    active_order = db.query(OrderHeader).filter_by(
+                        order_status="Printing"
+                    ).join(OrderDetail).filter(
+                        OrderDetail.filament_id.in_(printer_filament_ids) # Fixed attribute reference
+                    ).first()
+                
                 result.append({
-                    "printer_id":  p.printer_id,
+                    "printer_id": p.printer_id,
                     "printer_name": p.printer_type.printer_name if p.printer_type else None,
-                    "max_size":  p.printer_type.max_size if p.printer_type else None,
-                    "filament": p.filament.material_name if p.filament else None,
+                    "max_size": p.printer_type.max_size if p.printer_type else None,
+                    "filaments": [
+                        {
+                            "filament_id": link.filament.filament_id,
+                            "material_name": link.filament.material_name,
+                            "color_hex": link.filament.color_hex
+                        }
+                        for link in p.filament_links
+                        if link.filament
+                    ],
+                    "printer_queue": p.printer_queue or 0,
                     "status": "Printing" if active_order else "Available",
                     "current_order": active_order.order_header_id if active_order else None
                 })
@@ -156,23 +172,35 @@ def get_printers():
 @require_admin
 def add_printer():
     data = request.get_json()
-    required = ["printer_type_id"]
-    for field in required:
-        if data.get(field) is None:
-            return jsonify({"error": f"{field} is required"}), 400
+    if data.get("printer_type_id") is None:
+        return jsonify({"error": "printer_type_id is required"}), 400
     try:
         with get_db() as db:
-            printer_type = db.query(PrinterType).filter_by(printer_type_id=data["printer_type_id"]).first()
+            printer_type = db.query(PrinterType).filter_by(
+                printer_type_id=data["printer_type_id"]
+            ).first()
             if not printer_type:
                 return jsonify({"error": "Printer type not found"}), 404
+
             printer = Printer(
                 printer_type_id = data["printer_type_id"],
-                filament_id = data.get("filament_id")
+                printer_queue   = 0
             )
             db.add(printer)
             db.flush()
+
+            # link filaments
+            from ..models import FilamentPrinter
+            for filament_id in data.get("filament_ids", []):
+                filament = db.query(Filament).filter_by(filament_id=filament_id).first()
+                if filament:
+                    db.add(FilamentPrinter(
+                        printer_id=printer.printer_id,
+                        filament_id=filament_id
+                    ))
+
             return jsonify({
-                "message": "Printer added",
+                "message":    "Printer added",
                 "printer_id": printer.printer_id
             }), 201
     except Exception as e:

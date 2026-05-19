@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from app.database import get_db
 from app.models import (
     Filament, PrinterType, Printer, Tag,
-    Model, ModelFilament, ModelTag, OrderDetail
+    Model, ModelFilament, ModelTag, OrderDetail, FilamentPrinter
 )
 
 
@@ -17,6 +17,7 @@ def seed():
             db.query(ModelFilament).delete()
             db.query(ModelTag).delete()
             db.query(Model).delete()
+            db.query(FilamentPrinter).delete()
             db.query(Printer).delete()
             db.query(PrinterType).delete()
             db.query(Filament).delete()
@@ -135,85 +136,58 @@ def seed():
             db.add_all([pla_black, pla_white, petg_black, petg_white, petg_blue, petg_red, abs_black, abs_white, abs_grey, tpu_black, tpu_white, tpu_red])
             db.flush()
 
-            prusa_type1 = PrinterType(
+            # One printer type
+            prusa_type = PrinterType(
                 printer_name="Prusa MK4",
                 max_size=500.0
             )
 
-            prusa_type2 = PrinterType(
-                printer_name="Prusa MK4",
-                max_size=500.0
-            )
-
-            prusa_type3 = PrinterType(
-                printer_name="Prusa MK4",
-                max_size=500.0
-            )
-
-            db.add_all([prusa_type1, prusa_type2, prusa_type3])
+            db.add(prusa_type)
             db.flush()
 
+            # Three printers of the same type
             printer1 = Printer(
-                filament_id=pla_black.filament_id,
-                printer_type_id=prusa_type1.printer_type_id
+                printer_type_id=prusa_type.printer_type_id,
+                printer_queue=0
             )
 
             printer2 = Printer(
-                filament_id=pla_white.filament_id,
-                printer_type_id=prusa_type1.printer_type_id
+                printer_type_id=prusa_type.printer_type_id,
+                printer_queue=0
             )
 
             printer3 = Printer(
-                filament_id=petg_black.filament_id,
-                printer_type_id=prusa_type1.printer_type_id
+                printer_type_id=prusa_type.printer_type_id,
+                printer_queue=0
             )
 
-            printer4 = Printer(
-                filament_id=petg_white.filament_id,
-                printer_type_id=prusa_type1.printer_type_id
-            )
+            db.add_all([printer1, printer2, printer3])
+            db.flush()
 
-            printer5 = Printer(
-                filament_id=petg_blue.filament_id,
-                printer_type_id=prusa_type1.printer_type_id
-            )
+            # Each printer supports five filaments
+            db.add_all([
+                # Printer 1
+                FilamentPrinter(printer_id=printer1.printer_id, filament_id=pla_black.filament_id),
+                FilamentPrinter(printer_id=printer1.printer_id, filament_id=pla_white.filament_id),
+                FilamentPrinter(printer_id=printer1.printer_id, filament_id=petg_black.filament_id),
+                FilamentPrinter(printer_id=printer1.printer_id, filament_id=petg_white.filament_id),
+                FilamentPrinter(printer_id=printer1.printer_id, filament_id=petg_blue.filament_id),
 
-            printer6 = Printer(
-                filament_id=petg_red.filament_id,
-                printer_type_id=prusa_type1.printer_type_id
-            )
+                # Printer 2
+                FilamentPrinter(printer_id=printer2.printer_id, filament_id=petg_red.filament_id),
+                FilamentPrinter(printer_id=printer2.printer_id, filament_id=abs_black.filament_id),
+                FilamentPrinter(printer_id=printer2.printer_id, filament_id=abs_white.filament_id),
+                FilamentPrinter(printer_id=printer2.printer_id, filament_id=abs_grey.filament_id),
+                FilamentPrinter(printer_id=printer2.printer_id, filament_id=tpu_black.filament_id),
 
-            printer7 = Printer(
-                filament_id=abs_black.filament_id,
-                printer_type_id=prusa_type2.printer_type_id
-            )
+                # Printer 3
+                FilamentPrinter(printer_id=printer3.printer_id, filament_id=tpu_white.filament_id),
+                FilamentPrinter(printer_id=printer3.printer_id, filament_id=tpu_red.filament_id),
+                FilamentPrinter(printer_id=printer3.printer_id, filament_id=pla_black.filament_id),
+                FilamentPrinter(printer_id=printer3.printer_id, filament_id=petg_black.filament_id),
+                FilamentPrinter(printer_id=printer3.printer_id, filament_id=abs_black.filament_id),
+            ])
 
-            printer8 = Printer(
-                filament_id=abs_white.filament_id,
-                printer_type_id=prusa_type2.printer_type_id
-            )
-
-            printer9 = Printer(
-                filament_id=abs_grey.filament_id,
-                printer_type_id=prusa_type2.printer_type_id
-            )
-
-            printer10 = Printer(
-                filament_id=tpu_black.filament_id,
-                printer_type_id=prusa_type3.printer_type_id
-            )
-
-            printer11 = Printer(
-                filament_id=tpu_white.filament_id,
-                printer_type_id=prusa_type3.printer_type_id
-            )
-
-            printer12 = Printer(
-                filament_id=tpu_red.filament_id,
-                printer_type_id=prusa_type3.printer_type_id
-            )
-
-            db.add_all([printer1, printer2, printer3, printer4, printer5, printer6, printer7, printer8, printer9, printer10, printer11, printer12])
             db.flush()
 
             tags = {

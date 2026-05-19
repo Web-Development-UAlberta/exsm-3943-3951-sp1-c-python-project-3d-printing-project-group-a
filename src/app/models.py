@@ -50,7 +50,7 @@ class Filament(Base):
     finish_filament = Column(String(100))
     filament_price = Column(DECIMAL(10,2), nullable=False)
 
-    printers = relationship("Printer", back_populates="filament")
+    printer_links = relationship("FilamentPrinter", back_populates="filament")
     model_links = relationship("ModelFilament", back_populates="filament")
     order_details = relationship("OrderDetail", back_populates="filament")
 
@@ -71,14 +71,22 @@ class Printer(Base):
     __tablename__ = "printer"
 
     printer_id = Column(Integer, primary_key=True, autoincrement=True)
-    filament_id = Column(Integer, ForeignKey("filament.filament_id"))
     printer_type_id = Column(Integer, ForeignKey("printer_type.printer_type_id"))
     printer_queue = Column(Float)
 
-    filament = relationship("Filament", back_populates="printers")
+    filament_links = relationship("FilamentPrinter", back_populates="printer")
     printer_type = relationship("PrinterType", back_populates="printers")
     models = relationship("Model", back_populates="printer")
 
+# Filament-Printer table 
+class FilamentPrinter(Base):
+    __tablename__ = "filament_printer"
+
+    printer_id = Column(Integer, ForeignKey("printer.printer_id"), primary_key=True)
+    filament_id = Column(Integer, ForeignKey("filament.filament_id"), primary_key=True)
+
+    printer = relationship("Printer", back_populates="filament_links")
+    filament = relationship("Filament", back_populates="printer_links")
 
 # Tag
 class Tag(Base):
