@@ -373,19 +373,19 @@ def seed():
 		        model_image="src/app/model_images/earth_model.png"
             )
 
-            globe_earth = Model(
-                model_name="Custom Print",
+            custom_upload = Model(
+                model_name="Custom Product",
                 model_length=100,
                 model_width=100,
                 model_height=100,
-                model_description="Custom Print",
+                model_description="Custom Upload",
                 print_time_hours=3.0,
-                printer_id=printer1.printer_id,
-                model_file="src/app/model_files/earth_model.3tl",
-		        model_image="src/app/model_images/earth_model.png"
+                printer_id=printer2.printer_id,
+                model_file="custom.3tl",
+		        model_image="src/app/model_images/custom_print.png"
             )
 
-            db.add_all([desk_vase, tree_ornament, d20_dice, chess_queen, iron_man, bat_man, cable_clip, tool_hammer, helmet_prop, pylon_prop, dna_model, globe_earth])
+            db.add_all([desk_vase, tree_ornament, d20_dice, chess_queen, iron_man, bat_man, cable_clip, tool_hammer, helmet_prop, pylon_prop, dna_model, globe_earth, custom_upload])
             db.flush()
 
 
@@ -469,6 +469,10 @@ def seed():
                 ModelFilament(model_id=globe_earth.model_id, filament_id=tpu_black.filament_id),
                 ModelFilament(model_id=globe_earth.model_id, filament_id=tpu_white.filament_id),
                 ModelFilament(model_id=globe_earth.model_id, filament_id=tpu_red.filament_id),
+
+                ModelFilament(model_id=custom_upload.model_id, filament_id=abs_black.filament_id),
+                ModelFilament(model_id=custom_upload.model_id, filament_id=abs_white.filament_id),
+                ModelFilament(model_id=custom_upload.model_id, filament_id=abs_grey.filament_id),
             ])
 
             db.commit()
