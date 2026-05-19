@@ -49,7 +49,7 @@ The 3D Printing Online Store functions through Python. This README gives Users e
 
 ### **Backend Services**
 
-- Payment integration (Stripe)
+- Payment integration using (Stripe)
 
 ## **Project Structure**
 
