@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { apiGet, apiDelete } from "../lib/api";
+import { apiGet, apiDelete, apiPut } from "../lib/api";
 
 export default function CartPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -26,17 +26,22 @@ export default function CartPage() {
     loadCart();
   }, []);
 
-  const updateQty = (id: number, change: number) => {
-    setItems(
-      items.map((item) => {
-        if (item.order_detail_id === id) {
-          const newQty = (item.order_quantity || 1) + change;
-          if (newQty < 1) return item;
-          return { ...item, order_quantity: newQty };
-        }
-        return item;
-      }),
-    );
+  const updateQty = async (id: number, change: number) => {
+    const item = items.find((i) => i.order_detail_id === id);
+    if (!item) return;
+    const newQty = (item.order_quantity || 1) + change;
+    if (newQty < 1) return;
+    try {
+      const data = await apiPut(`/cart/${id}`, { quantity: newQty });
+      setItems(data.items || []);
+      setCartData(data);
+    } catch (err: any) {
+      setItems(
+        items.map((i) =>
+          i.order_detail_id === id ? { ...i, order_quantity: newQty } : i,
+        ),
+      );
+    }
   };
 
   const removeItem = async (id: number) => {
