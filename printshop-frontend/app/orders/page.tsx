@@ -264,8 +264,6 @@ export default function OrdersPage() {
                   <h3 className="text-xl font-semibold text-gray-900">
                     Order Details
                   </h3>
-
-                  <p className="mt-1 text-sm text-gray-500">{selectedOrder}</p>
                 </div>
 
                 <span
@@ -328,29 +326,26 @@ export default function OrdersPage() {
                   </div>
                 )}
 
+                <div className=" mb-4 flex justify-between text-sm">
+                  <span className="text-gray-500">Shipping</span>
+
+                  <span className="font-medium text-gray-900">
+                    $
+                    {(
+                      selected.shipping_price ||
+                      selected.shipping ||
+                      10
+                    ).toFixed(2)}
+                  </span>
+                </div>
+
                 <div className="border-t border-gray-200 pt-4">
                   <div className="mb-2 flex justify-between text-sm">
-                    <span className="text-gray-500">Subtotal</span>
+                    <span className="text-gray-900">Subtotal</span>
 
                     <span className="font-medium text-gray-900">
                       $
-                      {(
-                        (selected.total_price || 0) -
-                        (selected.shipping_price || 10)
-                      ).toFixed(2)}
-                    </span>
-                  </div>
-
-                  <div className="mb-4 flex justify-between text-sm">
-                    <span className="text-gray-500">Shipping</span>
-
-                    <span className="font-medium text-gray-900">
-                      $
-                      {(
-                        selected.shipping_price ||
-                        selected.shipping ||
-                        10
-                      ).toFixed(2)}
+                      {(selected.total_price || selected.total || 0).toFixed(2)}
                     </span>
                   </div>
 
@@ -386,8 +381,18 @@ export default function OrdersPage() {
                       className="flex items-center justify-between rounded-xl border border-gray-200 p-4"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 text-xs text-gray-400">
-                          IMG
+                        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100 overflow-hidden">
+                          {item.model_image ? (
+                            <img
+                              src={`http://127.0.0.1:5000/api/models/images/${item.model_image.split("/").pop()}`}
+                              alt={item.model}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-lg font-medium text-gray-500">
+                              {item.model?.charAt(0) || "?"}
+                            </span>
+                          )}
                         </div>
 
                         <div>
@@ -406,7 +411,10 @@ export default function OrdersPage() {
                           Qty: {item.quantity || 1}
                         </p>
                         <p className="mt-1 font-semibold text-gray-900">
-                          ${(item.unit_price || 0).toFixed(2)}
+                          $
+                          {(
+                            (item.unit_price || 0) * (item.quantity || 1)
+                          ).toFixed(2)}
                         </p>
                       </div>
                     </div>

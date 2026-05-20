@@ -26,8 +26,9 @@ def get_my_orders():
                     "payment_status": o.payment_status,
                     "tracking_number": o.order_tracking_number,
                     "items": [
-                        {
+                     {
                             "model": d.model.model_name,
+                            "model_image": d.model.model_image if d.model else None,
                             "quantity": d.order_quantity,
                             "unit_price": float(d.unit_price),
                             "filament": d.filament.material_name
@@ -64,8 +65,9 @@ def get_order(order_id):
                 "tracking_number": order.order_tracking_number,
                 "stripe_payment_id": order.stripe_payment_id,
                 "items": [
-                    {
+             {
                         "model": d.model.model_name,
+                        "model_image": d.model.model_image if d.model else None,
                         "quantity": d.order_quantity,
                         "infill": float(d.infill_percent),
                         "scale": float(d.scale),

@@ -57,8 +57,11 @@ export default function CartPage() {
     setItems([]);
   };
   const shipping = cartData ? cartData.shipping_price : 10;
-  const total = cartData ? cartData.total_price : 0;
-  const subtotal = total - shipping;
+  const subtotal = items.reduce(
+    (sum, item) => sum + (item.unit_price || 0) * (item.order_quantity || 1),
+    0,
+  );
+  const total = subtotal + shipping;
 
   if (loading) {
     return (
