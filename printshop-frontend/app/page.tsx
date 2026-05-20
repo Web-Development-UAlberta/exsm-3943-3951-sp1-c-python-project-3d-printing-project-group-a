@@ -5,7 +5,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { apiGet } from "./lib/api";
-import Image from "next/image";
 
 export default function Home() {
   const [search, setSearch] = useState("");
@@ -15,6 +14,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [tags, setTags] = useState<any[]>([]);
+  const [allFilaments, setAllFilaments] = useState<any[]>([]);
 
   const tagColors: Record<string, { color: string; inactive: string }> = {
     Utilities: {
@@ -63,6 +63,8 @@ export default function Home() {
         });
       });
       setTags(allTags);
+      const filamentsData = await apiGet("/filaments");
+      setAllFilaments(filamentsData);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -76,7 +78,12 @@ export default function Home() {
       let query = "/models?";
       if (search) query += `search=${search}&`;
       query += `tag_id=${tagId}&`;
-      if (activeMaterial !== "All") query += `material=${activeMaterial}&`;
+      if (activeMaterial !== "All") {
+        const filament = allFilaments.find(
+          (f: any) => f.material_name === activeMaterial,
+        );
+        if (filament) query += `filament_id=${filament.filament_id}&`;
+      }
       const data = await apiGet(query);
       setModels(data);
     } catch (err: any) {
@@ -126,7 +133,7 @@ export default function Home() {
 
       {/* Categories */}
       <div className="mb-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-2">
+        <h2 className="text-sm font-semibold text-teal-100-600 mb-2">
           Browse by category
         </h2>
         <div className="flex gap-2 flex-wrap">
@@ -173,11 +180,27 @@ export default function Home() {
 
       {/* Material filter */}
       <div className="flex items-center gap-2 mb-6">
-        <span className="text-sm font-semibold text-gray-700">Material:</span>
+        <span className="text-sm font-semibold text-gray-200">Material:</span>
         {materials.map((mat) => (
           <button
             key={mat}
-            onClick={() => setActiveMaterial(mat)}
+            onClick={() => {
+              setActiveMaterial(mat);
+              if (mat === "All") {
+                loadModels();
+              } else {
+                const filament = allFilaments.find(
+                  (f: any) => f.material_name === mat,
+                );
+                if (filament) {
+                  setLoading(true);
+                  apiGet(`/models?filament_id=${filament.filament_id}&`)
+                    .then((data) => setModels(data))
+                    .catch(() => {})
+                    .finally(() => setLoading(false));
+                }
+              }
+            }}
             className={`px-3 py-1 rounded-full text-sm ${
               activeMaterial === mat
                 ? "bg-gray-900 text-white"
@@ -265,7 +288,11 @@ export default function Home() {
                           </span>
                         );
                       })}
-                      {Array.from(new Map(model.filaments?.map(f => [f.material_name, f])).values()).map((f) => (
+                      {Array.from(
+                        new Map(
+                          model.filaments?.map((f) => [f.material_name, f]),
+                        ).values(),
+                      ).map((f) => (
                         <span
                           key={f.filament_id}
                           className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full"

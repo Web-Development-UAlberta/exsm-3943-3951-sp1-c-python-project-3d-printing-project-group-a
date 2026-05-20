@@ -21,6 +21,7 @@ def format_cart(cart):
                 "order_detail_id": d.order_detail_id,
                 "model_id": d.model_id,
                 "model_name": d.model.model_name if d.model else None,
+                "model_image": d.model.model_image if d.model else None,
                 "filament_id": d.filament_id,
                 "material_name": d.filament.material_name if d.filament else None,
                 "color_hex": d.filament.color_hex if d.filament else None,

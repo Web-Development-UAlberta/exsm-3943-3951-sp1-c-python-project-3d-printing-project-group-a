@@ -231,8 +231,18 @@ export default function CheckoutPage() {
                   className="flex items-center justify-between border-b border-gray-100 pb-5"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gray-100 text-xs text-gray-400">
-                      IMG
+                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gray-100 overflow-hidden">
+                      {item.model_image ? (
+                        <img
+                          src={`http://127.0.0.1:5000/api/models/images/${item.model_image.split("/").pop()}`}
+                          alt={item.model_name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-lg font-medium text-gray-500">
+                          {item.model_name?.charAt(0) || "?"}
+                        </span>
+                      )}
                     </div>
 
                     <div>
