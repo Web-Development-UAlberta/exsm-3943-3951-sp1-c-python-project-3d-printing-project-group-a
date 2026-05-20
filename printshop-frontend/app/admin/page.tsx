@@ -17,7 +17,7 @@ export default function AdminPage() {
     stock: "",
     price: "",
     wear: false,
-    lead: "",
+    manufacturer: "",
   });
 
   useEffect(() => {
@@ -58,6 +58,7 @@ export default function AdminPage() {
         quantity_in_stock: Number(newFilament.stock),
         filament_price: Number(newFilament.price),
         more_wear_and_tear: newFilament.wear,
+        manufacturer: newFilament.manufacturer,
       });
       setFilaments([...filaments, data]);
     } catch (err: any) {
@@ -336,10 +337,13 @@ export default function AdminPage() {
                       {newFilament.wear ? "Wear: Yes" : "Wear: No"}
                     </button>
                     <input
-                      placeholder="e.g. 3 days"
-                      value={newFilament.lead}
+                      placeholder="e.g. Manufacturer"
+                      value={newFilament.manufacturer}
                       onChange={(e) =>
-                        setNewFilament({ ...newFilament, lead: e.target.value })
+                        setNewFilament({
+                          ...newFilament,
+                          manufacturer: e.target.value,
+                        })
                       }
                       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
                     />

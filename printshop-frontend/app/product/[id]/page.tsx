@@ -11,6 +11,16 @@ export default function ConfiguratorPage() {
   const params = useParams();
   const id = params.id as string;
 
+  const searchParams =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
+  const preFilamentId = searchParams.get("filament_id");
+  const preScale = searchParams.get("scale");
+  const preInfill = searchParams.get("infill");
+  const preMulticolor = searchParams.get("multicolor");
+  const preColorCount = searchParams.get("color_count");
+
   const [scale, setScale] = useState(100);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,10 +30,10 @@ export default function ConfiguratorPage() {
   const [model, setModel] = useState<any>(null);
   const [selectedFilament, setSelectedFilament] = useState<any>(null);
   const [infill, setInfill] = useState(50);
-  const [material, setMaterial] = useState("PLA");
-  const [color, setColor] = useState("Black");
-  const [multiColor, setMultiColor] = useState(false);
+
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [multiColor, setMultiColor] = useState(false);
+  const [colorCount, setColorCount] = useState(1);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -32,8 +42,21 @@ export default function ConfiguratorPage() {
         setModel(data);
 
         if (data.filaments && data.filaments.length > 0) {
-          setSelectedFilament(data.filaments[0]);
+          // Check if pre-selected filament from custom page
+          if (preFilamentId) {
+            const pre = data.filaments.find(
+              (f: any) => f.filament_id === Number(preFilamentId),
+            );
+            setSelectedFilament(pre || data.filaments[0]);
+          } else {
+            setSelectedFilament(data.filaments[0]);
+          }
         }
+        // Apply other pre-selected settings from custom page
+        if (preScale) setScale(Number(preScale));
+        if (preInfill) setInfill(Number(preInfill));
+        if (preMulticolor === "true") setMultiColor(true);
+        if (preColorCount) setColorCount(Number(preColorCount));
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -42,8 +65,6 @@ export default function ConfiguratorPage() {
     };
     loadModel();
   }, [id]);
-  const materials = ["PLA", "PETG", "ABS", "TPU"];
-  const colors = ["Black", "White", "Blue", "Red", "Grey", "Green"];
 
   const toggleColor = (c: string) => {
     setSelectedColors((prev) => {
@@ -78,7 +99,14 @@ export default function ConfiguratorPage() {
     };
     const timer = setTimeout(getQuote, 300);
     return () => clearTimeout(timer);
-  }, [model, selectedFilament, scale, infill, multiColor, selectedColors]);
+  }, [
+    model,
+    selectedFilament,
+    scale,
+    infill,
+    multiColor,
+    selectedColors.length,
+  ]);
 
   const dimWarning =
     (model?.model_length || 0) > 500 ||
@@ -112,11 +140,9 @@ export default function ConfiguratorPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {addedToCart && (
-            <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4 flex justify-between items-center">
-              <p className="text-sm text-green-700 font-medium">
-                ✓ Added to cart!
-              </p>
-              <Link href="/cart" className="text-sm text-green-700 underline">
+            <div className="fixed bottom-6 right-6 z-50 rounded-xl bg-green-600 text-white px-4 py-3 shadow-lg flex items-center gap-3">
+              <p className="text-sm font-medium">✓ Added to cart!</p>
+              <Link href="/cart" className="text-sm underline">
                 View cart →
               </Link>
             </div>
@@ -240,36 +266,61 @@ export default function ConfiguratorPage() {
 
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <h3 className="text-sm font-medium uppercase tracking-[0.16em] text-slate-500">
-                Material
+                Material & Color
               </h3>
-              <select
-                value={material}
-                onChange={(e) => setMaterial(e.target.value)}
-                className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
-              >
-                {materials.map((mat) => (
-                  <option key={mat} value={mat}>
-                    {mat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-sm font-medium uppercase tracking-[0.16em] text-slate-500">
-                Color
-              </h3>
-              <select
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5"
-              >
-                {colors.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+              {model?.filaments && model.filaments.length > 0 ? (
+                <div className="mt-4 space-y-2">
+                  {model.filaments.map((f: any) => (
+                    <button
+                      key={f.filament_id}
+                      onClick={() => f.in_stock && setSelectedFilament(f)}
+                      disabled={!f.in_stock}
+                      className={`w-full text-left px-4 py-3 rounded-xl border-2 transition flex items-center justify-between ${
+                        !f.in_stock
+                          ? "border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed"
+                          : selectedFilament?.filament_id === f.filament_id
+                            ? "border-slate-900 bg-slate-50 shadow-sm"
+                            : "border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-6 h-6 rounded-full border border-slate-300"
+                          style={{ backgroundColor: f.color_hex }}
+                        />
+                        <div>
+                          <p className="text-sm font-medium">
+                            {f.material_name}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {f.color_hex} — ${f.filament_price}/kg
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {selectedFilament?.filament_id === f.filament_id && (
+                          <span className="text-xs bg-slate-900 text-white px-2 py-0.5 rounded-full">
+                            Selected
+                          </span>
+                        )}
+                        {f.in_stock ? (
+                          <span className="text-xs text-green-600">
+                            In stock
+                          </span>
+                        ) : (
+                          <span className="text-xs text-red-600">
+                            Out of stock
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-slate-500">
+                  No filaments available
+                </p>
+              )}
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -302,19 +353,23 @@ export default function ConfiguratorPage() {
                     Choose colors
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {colors.map((c) => {
-                      const active = selectedColors.includes(c);
+                    {model?.filaments?.map((f: any) => {
+                      const active = selectedColors.includes(f.color_hex);
                       return (
                         <button
-                          key={c}
-                          onClick={() => toggleColor(c)}
-                          className={`cursor-pointer rounded-full px-4 py-2 text-sm transition ${
+                          key={f.filament_id}
+                          onClick={() => toggleColor(f.color_hex)}
+                          className={`cursor-pointer flex items-center gap-2 rounded-full px-3 py-2 text-sm transition ${
                             active
                               ? "bg-slate-950 text-white"
                               : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                           }`}
                         >
-                          {c}
+                          <div
+                            className="w-4 h-4 rounded-full border border-slate-300"
+                            style={{ backgroundColor: f.color_hex }}
+                          />
+                          {f.material_name}
                         </button>
                       );
                     })}
@@ -404,10 +459,22 @@ export default function ConfiguratorPage() {
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
-                  <span className="text-sm text-slate-500">Color</span>
-                  <span className="text-sm text-slate-900">
-                    {selectedFilament?.color_hex || "--"}
+                  <span className="text-sm text-slate-500">
+                    Material & Color
                   </span>
+                  <div className="flex items-center gap-2">
+                    {selectedFilament?.color_hex && (
+                      <div
+                        className="w-4 h-4 rounded-full border border-slate-300"
+                        style={{ backgroundColor: selectedFilament.color_hex }}
+                      />
+                    )}
+                    <span className="text-sm text-slate-900">
+                      {selectedFilament
+                        ? `${selectedFilament.material_name} — ${selectedFilament.color_hex}`
+                        : "--"}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex justify-between border-b border-slate-100 pb-3">
                   <span className="text-sm text-slate-500">Multi-color</span>
@@ -463,12 +530,6 @@ export default function ConfiguratorPage() {
                         <span className="text-sm text-slate-500">Overhead</span>
                         <span className="text-sm text-slate-900">
                           ${quote.overhead}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-slate-500">Overhead</span>
-                        <span className="text-sm text-slate-900">
-                          ${quote.overhead_cost}
                         </span>
                       </div>
                       {quote.multicolor_surcharge > 0 && (

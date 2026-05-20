@@ -43,7 +43,7 @@ export default function RegisterPage() {
   return (
     <div className="flex justify-center">
       <div className="bg-white border border-gray-200 rounded-lg p-8 w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-center mb-6">
+        <h1 className="text-black text-2xl font-bold text-center mb-6">
           Create your account
         </h1>
 
@@ -54,7 +54,7 @@ export default function RegisterPage() {
         )}
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             Username
           </label>
           <input
@@ -62,7 +62,7 @@ export default function RegisterPage() {
             placeholder="e.g. Robel_M"
             value={form.username}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+            className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
           />
         </div>
 
@@ -76,7 +76,7 @@ export default function RegisterPage() {
             placeholder="min 8 chars -- include a number and symbol"
             value={form.password}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+            className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
           />
         </div>
 
@@ -89,7 +89,7 @@ export default function RegisterPage() {
             placeholder="e.g. Robel Measho"
             value={form.full_name}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+            className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
           />
         </div>
 
@@ -103,7 +103,7 @@ export default function RegisterPage() {
             placeholder="e.g. R@email.com"
             value={form.email}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+            className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
           />
         </div>
 
@@ -116,7 +116,7 @@ export default function RegisterPage() {
             placeholder="e.g. 780-555-0101"
             value={form.phone_number}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+            className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
           />
         </div>
 
@@ -130,7 +130,7 @@ export default function RegisterPage() {
               placeholder="e.g. Fox Creek"
               value={form.city}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
           <div>
@@ -142,7 +142,7 @@ export default function RegisterPage() {
               placeholder="e.g. 123 Main St"
               value={form.street_address}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
               placeholder="e.g. AB"
               value={form.province}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
           <div>
@@ -169,7 +169,7 @@ export default function RegisterPage() {
               placeholder="e.g. T5A 0A1"
               value={form.postal_code}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
         </div>

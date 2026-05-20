@@ -144,8 +144,18 @@ export default function CartPage() {
                     key={item.order_detail_id || item.id}
                     className="bg-white border rounded-lg shadow-sm p-4 flex gap-4 items-center"
                   >
-                    <div className="shrink-0 h-24 w-24 rounded-md bg-gray-100 border flex items-center justify-center text-sm text-gray-500">
-                      [img]
+                    <div className="shrink-0 h-24 w-24 rounded-md bg-gray-100 border overflow-hidden flex items-center justify-center">
+                      {item.model_image ? (
+                        <img
+                          src={`http://127.0.0.1:5000/api/models/images/${item.model_image.split("/").pop()}`}
+                          alt={item.model_name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-lg font-medium text-gray-500">
+                          {item.model_name?.charAt(0) || "?"}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex-1">

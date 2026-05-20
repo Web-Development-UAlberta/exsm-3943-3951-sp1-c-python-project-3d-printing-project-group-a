@@ -120,7 +120,7 @@ export default function EditProfilePage() {
               name="username"
               value={form.username}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className=" text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
 
@@ -132,7 +132,7 @@ export default function EditProfilePage() {
               name="full_name"
               value={form.full_name}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
 
@@ -144,7 +144,7 @@ export default function EditProfilePage() {
               name="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
 
@@ -156,7 +156,7 @@ export default function EditProfilePage() {
               name="phone_number"
               value={form.phone_number}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className=" text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
 
@@ -169,7 +169,7 @@ export default function EditProfilePage() {
                 name="city"
                 value={form.city}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+                className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
               />
             </div>
             <div>
@@ -180,7 +180,7 @@ export default function EditProfilePage() {
                 name="street_address"
                 value={form.street_address}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+                className=" text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
               />
             </div>
           </div>
@@ -194,7 +194,7 @@ export default function EditProfilePage() {
                 name="province"
                 value={form.province}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+                className=" text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
               />
             </div>
             <div>
@@ -205,7 +205,7 @@ export default function EditProfilePage() {
                 name="postal_code"
                 value={form.postal_code}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+                className=" text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
               />
             </div>
           </div>
@@ -216,7 +216,7 @@ export default function EditProfilePage() {
           </h2>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               Current password
             </label>
             <input
@@ -225,7 +225,7 @@ export default function EditProfilePage() {
               placeholder="Enter current password"
               value={passwords.current}
               onChange={handlePasswordChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className=" text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
 
@@ -239,7 +239,7 @@ export default function EditProfilePage() {
               placeholder="Min 8 chars"
               value={passwords.newPass}
               onChange={handlePasswordChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
 
@@ -253,7 +253,7 @@ export default function EditProfilePage() {
               placeholder="Re-enter new password"
               value={passwords.confirm}
               onChange={handlePasswordChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
             />
           </div>
         </div>
@@ -294,7 +294,7 @@ export default function EditProfilePage() {
               </label>
               <input
                 value="123 Main St"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+                className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
                 readOnly
               />
             </div>
@@ -306,7 +306,7 @@ export default function EditProfilePage() {
                 </label>
                 <input
                   value="Fox Creek"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+                  className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
                   readOnly
                 />
               </div>
@@ -316,7 +316,7 @@ export default function EditProfilePage() {
                 </label>
                 <input
                   value="AB"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+                  className="text-black w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
                   readOnly
                 />
               </div>
