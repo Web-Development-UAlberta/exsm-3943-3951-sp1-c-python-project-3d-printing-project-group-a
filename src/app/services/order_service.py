@@ -119,13 +119,11 @@ def clear_cart(db, user_id):
     return cart
 
 
-def deduct_filament_stock(db, cart):
+def deduct_filament_stock(db, order):
     """
-    Deducts filament stock for each item in the cart.
-    Called after order is confirmed.
-    Uses material_grams from pricing to know how much to deduct.
+    Deducts filament stock when order status changes to Printing.
     """
-    for detail in cart.details:
+    for detail in order.details:
         filament = db.query(Filament).filter_by(
             filament_id=detail.filament_id
         ).first()
@@ -146,11 +144,10 @@ def deduct_filament_stock(db, cart):
                     print_time_hours = float(model.print_time_hours)
                 )
                 grams_needed = quote["material_grams"] * detail.order_quantity
-
                 if filament.quantity_in_stock is not None:
                     filament.quantity_in_stock = max(0, filament.quantity_in_stock - grams_needed)
-            except Exception:
-                pass
+            except Exception as e:
+                print(e)
 
 
 def assign_printer_to_order(db, order, print_time_hours):

@@ -72,9 +72,6 @@ def confirm_order():
             cart.payment_status = "Succeeded"
             cart.payment_date = date.today()
 
-            # deduct filament stock
-            deduct_filament_stock(db, cart)
-            db.commit()
 
             printer_info = None
             if print_time_hours:
