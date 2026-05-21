@@ -42,14 +42,6 @@ def add_item_to_cart(db, user_id, model_id, filament_id, quantity, scale, infill
     if not model.print_time_hours:
         raise ValueError("Model is missing print time data")
 
-    MAX_DIM = 500
-    if any(d * (scale / 100) > MAX_DIM for d in [
-        model.model_length or 0,
-        model.model_width  or 0,
-        model.model_height or 0
-    ]):
-        raise ValueError("Scaled dimensions exceed maximum of 500mm per side")
-
     quote = calculate_quote(
         length = model.model_length,
         width = model.model_width,
@@ -125,6 +117,41 @@ def clear_cart(db, user_id):
     db.flush()
     cart.total_price = float(cart.shipping_price)
     return cart
+
+
+def deduct_filament_stock(db, cart):
+    """
+    Deducts filament stock for each item in the cart.
+    Called after order is confirmed.
+    Uses material_grams from pricing to know how much to deduct.
+    """
+    for detail in cart.details:
+        filament = db.query(Filament).filter_by(
+            filament_id=detail.filament_id
+        ).first()
+        model = db.query(Model).filter_by(
+            model_id=detail.model_id
+        ).first()
+
+        if filament and model and model.model_length:
+            try:
+                quote = calculate_quote(
+                    length = model.model_length,
+                    width = model.model_width,
+                    height = model.model_height,
+                    scale = float(detail.scale),
+                    infill_percent = float(detail.infill_percent),
+                    filament_price = float(filament.filament_price),
+                    color_count = 1,
+                    print_time_hours = float(model.print_time_hours)
+                )
+                grams_needed = quote["material_grams"] * detail.order_quantity
+
+                if filament.quantity_in_stock is not None:
+                    filament.quantity_in_stock = max(0, filament.quantity_in_stock - grams_needed)
+            except Exception:
+                pass
+
 
 def assign_printer_to_order(db, order, print_time_hours):
     from ..models import Printer

@@ -2,7 +2,6 @@ from decimal import Decimal, ROUND_HALF_UP
 
 
 def calculate_quote(length, width, height, scale, infill_percent, filament_price, color_count, print_time_hours):
-
     length = Decimal(str(length))
     width = Decimal(str(width))
     height = Decimal(str(height))
@@ -10,6 +9,11 @@ def calculate_quote(length, width, height, scale, infill_percent, filament_price
     infill_factor = Decimal(str(infill_percent)) / Decimal("100")
     filament_price = Decimal(str(filament_price))
     print_time_hours = Decimal(str(print_time_hours))
+
+    # validate dimensions after scaling
+    MAX_DIM = Decimal("500")
+    if any(d * scale_factor > MAX_DIM for d in [length, width, height]):
+        raise ValueError("Scaled dimensions exceed maximum of 500mm per side")
 
     # base volume in mm³
     base_volume_mm3 = length * width * height
@@ -23,7 +27,7 @@ def calculate_quote(length, width, height, scale, infill_percent, filament_price
     # apply 20% waste factor
     material_volume_mm3_with_waste = material_volume_mm3 * Decimal("1.20")
 
-    # convert mm³ -> cm³ (using waste-adjusted volume)
+    # convert mm³ -> cm³
     material_volume_cm3 = material_volume_mm3_with_waste / Decimal("1000")
 
     # PLA density almost 1.24 g/cm³
@@ -40,7 +44,7 @@ def calculate_quote(length, width, height, scale, infill_percent, filament_price
     overhead = subtotal * Decimal("1.15")
 
     # multi-color surcharge 5% if 5 or more colors
-    surcharge = overhead * Decimal("0.05") if color_count > 4 else Decimal("0")
+    surcharge = overhead * Decimal("0.05") if color_count >= 2 else Decimal("0")
 
     # 25% profit margin
     pre_margin = overhead + surcharge

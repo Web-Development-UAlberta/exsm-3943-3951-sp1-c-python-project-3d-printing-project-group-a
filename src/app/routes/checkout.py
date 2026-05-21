@@ -5,7 +5,7 @@ from datetime import date
 from ..database import get_db
 from ..models import OrderHeader
 from ..services.stripe_service import create_payment_intent
-from ..services.order_service import assign_printer_to_order
+from ..services.order_service import assign_printer_to_order, deduct_filament_stock
 
 checkout_bp = Blueprint("checkout", __name__)
 
@@ -71,6 +71,10 @@ def confirm_order():
             cart.stripe_payment_id = data["payment_intent_id"]
             cart.payment_status = "Succeeded"
             cart.payment_date = date.today()
+
+            # deduct filament stock
+            deduct_filament_stock(db, cart)
+            db.commit()
 
             printer_info = None
             if print_time_hours:
