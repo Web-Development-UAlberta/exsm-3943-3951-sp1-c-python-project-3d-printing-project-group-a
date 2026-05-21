@@ -263,15 +263,26 @@ def update_order(order_id):
             order = db.query(OrderHeader).filter_by(order_header_id=order_id).first()
             if not order:
                 return jsonify({"error": "Order not found"}), 404
+
             if data.get("order_status"):
                 if data["order_status"] not in valid_statuses:
                     return jsonify({"error": f"Invalid status. Must be one of: {valid_statuses}"}), 400
+
+                # deduct stock when admin marks as Printing
+                if data["order_status"] == "Printing" and order.order_status != "Printing":
+                    from ..services.order_service import deduct_filament_stock
+                    # deduct filament stock
+                    deduct_filament_stock(db, order)
+                    db.commit()
                 order.order_status = data["order_status"]
+
             if data.get("order_tracking_number") is not None:
                 order.order_tracking_number = data["order_tracking_number"]
             if data.get("payment_status") is not None:
                 order.payment_status = data["payment_status"]
+
             return jsonify({"message": "Order updated"}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
