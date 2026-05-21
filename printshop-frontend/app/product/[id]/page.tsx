@@ -394,9 +394,9 @@ export default function ConfiguratorPage() {
 
               <p className="mt-3 text-xs text-slate-500">
                 {multiColor
-                  ? selectedColors.length >= 5
+                  ? selectedColors.length >= 2
                     ? "ON — 5% surcharge applied"
-                    : "ON — no extra charge for under 5 colors"
+                    : "ON — no extra charge for under 2 colors"
                   : "OFF — click to enable"}
               </p>
             </div>
@@ -604,3 +604,4 @@ export default function ConfiguratorPage() {
     </div>
   );
 }
+5

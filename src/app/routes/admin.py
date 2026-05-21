@@ -436,19 +436,19 @@ def remove_admin(user_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@admin_bp.route("/users/<int:user_id>", methods=["DELETE"])
-@jwt_required()
-@require_admin
-def delete_user(user_id):
-    try:
-        with get_db() as db:
-            user = db.query(User).filter_by(user_id=user_id).first()
-            if not user:
-                return jsonify({"error": "User not found"}), 404
-            db.delete(user)
-            return jsonify({"message": "User deleted"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# @admin_bp.route("/users/<int:user_id>", methods=["DELETE"])
+# @jwt_required()
+# @require_admin
+# def delete_user(user_id):
+#     try:
+#         with get_db() as db:
+#             user = db.query(User).filter_by(user_id=user_id).first()
+#             if not user:
+#                 return jsonify({"error": "User not found"}), 404
+#             db.delete(user)
+#             return jsonify({"message": "User deleted"}), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 # printer types
 @admin_bp.route("/printer-types", methods=["GET"])
@@ -513,5 +513,187 @@ def delete_order(order_id):
                 db.delete(detail)
             db.delete(order)
             return jsonify({"message": "Order deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# REFILL FILAMENT STOCK
+@admin_bp.route("/filaments/<int:filament_id>/refill", methods=["PUT"])
+@jwt_required()
+@require_admin
+def refill_filament_stock(filament_id):
+    data = request.get_json()
+
+    if data.get("quantity_to_add") is None:
+        return jsonify({"error": "quantity_to_add is required"}), 400
+
+    try:
+        quantity_to_add = float(data["quantity_to_add"])
+    except (TypeError, ValueError):
+        return jsonify({"error": "quantity_to_add must be a number"}), 400
+
+    if quantity_to_add <= 0:
+        return jsonify({"error": "quantity_to_add must be greater than 0"}), 400
+
+    try:
+        with get_db() as db:
+            # Find the filament
+            filament = db.query(Filament).filter_by(
+                filament_id=filament_id
+            ).first()
+
+            if not filament:
+                return jsonify({"error": "Filament not found"}), 404
+
+            # Add to current stock
+            current_stock = float(filament.quantity_in_stock or 0)
+            filament.quantity_in_stock = current_stock + quantity_to_add
+
+            # OPTIONAL: Link this filament to models in ModelFilament
+            linked_models = []
+
+            for model_id in data.get("model_ids", []):
+                # Make sure model exists
+                model = db.query(Model).filter_by(
+                    model_id=model_id
+                ).first()
+
+                if not model:
+                    continue
+
+                # Check if link already exists
+                existing_link = db.query(ModelFilament).filter_by(
+                    model_id=model_id,
+                    filament_id=filament_id
+                ).first()
+
+                # Create link only if it does not already exist
+                if not existing_link:
+                    db.add(ModelFilament(
+                        model_id=model_id,
+                        filament_id=filament_id
+                    ))
+
+                linked_models.append(model_id)
+
+            db.flush()
+
+            return jsonify({
+                "message": "Filament stock refilled successfully",
+                "filament_id": filament.filament_id,
+                "material_name": filament.material_name,
+                "previous_stock": current_stock,
+                "quantity_added": quantity_to_add,
+                "new_stock": float(filament.quantity_in_stock),
+                "linked_model_ids": linked_models
+            }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# UPDATE EXISTING PRINTER
+@admin_bp.route("/printers/<int:printer_id>", methods=["PUT"])
+@jwt_required()
+@require_admin
+def update_printer(printer_id):
+    data = request.get_json()
+
+    try:
+        with get_db() as db:
+            printer = db.query(Printer).filter_by(
+                printer_id=printer_id
+            ).first()
+
+            if not printer:
+                return jsonify({"error": "Printer not found"}), 404
+
+            # Update printer type
+            if data.get("printer_type_id") is not None:
+                printer_type = db.query(PrinterType).filter_by(
+                    printer_type_id=data["printer_type_id"]
+                ).first()
+
+                if not printer_type:
+                    return jsonify({"error": "Printer type not found"}), 404
+
+                printer.printer_type_id = data["printer_type_id"]
+
+            # Update queue
+            if data.get("printer_queue") is not None:
+                printer.printer_queue = data["printer_queue"]
+
+            # Replace filament links if provided
+            if "filament_ids" in data:
+                # Delete old links
+                db.query(FilamentPrinter).filter_by(
+                    printer_id=printer.printer_id
+                ).delete()
+
+                # Add new links
+                for filament_id in data["filament_ids"]:
+                    filament = db.query(Filament).filter_by(
+                        filament_id=filament_id
+                    ).first()
+
+                    if filament:
+                        db.add(FilamentPrinter(
+                            printer_id=printer.printer_id,
+                            filament_id=filament_id
+                        ))
+
+            db.flush()
+
+            return jsonify({
+                "message": "Printer updated successfully",
+                "printer_id": printer.printer_id
+            }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# DELETE USER PERMANENTLY
+@admin_bp.route("/users/<int:user_id>", methods=["DELETE"])
+@jwt_required()
+@require_admin
+def delete_user(user_id):
+    from flask_jwt_extended import get_jwt_identity
+
+    current_user_id = int(get_jwt_identity())
+
+    try:
+        with get_db() as db:
+            user = db.query(User).filter_by(
+                user_id=user_id
+            ).first()
+
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+
+            # Prevent admin from deleting themselves
+            if user.user_id == current_user_id:
+                return jsonify({
+                    "error": "You cannot delete your own account"
+                }), 400
+
+            # Prevent deleting the last admin
+            if user.is_admin:
+                admin_count = db.query(User).filter_by(
+                    is_admin=True
+                ).count()
+
+                if admin_count <= 1:
+                    return jsonify({
+                        "error": "Cannot delete the last admin account"
+                    }), 400
+
+            # Permanently delete user
+            db.delete(user)
+            db.flush()
+
+            return jsonify({
+                "message": f"User '{user.username}' deleted permanently"
+            }), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
