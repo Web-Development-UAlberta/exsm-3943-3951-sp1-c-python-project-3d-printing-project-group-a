@@ -492,3 +492,26 @@ def add_printer_type():
             }), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+
+@admin_bp.route("/orders/<int:order_id>", methods=["DELETE"])
+@jwt_required()
+@require_admin
+def delete_order(order_id):
+    try:
+        with get_db() as db:
+            order = db.query(OrderHeader).filter_by(
+                order_header_id=order_id
+            ).first()
+            if not order:
+                return jsonify({"error": "Order not found"}), 404
+            if order.order_status != "Cancelled":
+                return jsonify({"error": "Only cancelled orders can be deleted"}), 400
+            # Delete order details first
+            for detail in order.details:
+                db.delete(detail)
+            db.delete(order)
+            return jsonify({"message": "Order deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

@@ -118,3 +118,27 @@ def clear_cart_route():
         return jsonify({"error": str(e)}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@cart_bp.route("/<int:order_detail_id>", methods=["PUT"])
+@jwt_required()
+def update_cart_item(order_detail_id):
+    user_id = int(get_jwt_identity())
+    data = request.get_json()
+    quantity = data.get("quantity", 1)
+    if quantity < 1:
+        return jsonify({"error": "Quantity must be at least 1"}), 400
+    try:
+        with get_db() as db:
+            detail = db.query(OrderDetail).filter_by(
+                order_detail_id=order_detail_id
+            ).first()
+            if not detail:
+                return jsonify({"error": "Item not found"}), 404
+            detail.order_quantity = quantity
+            cart = db.query(OrderHeader).filter_by(
+                order_header_id=detail.order_header_id,
+                user_id=user_id
+            ).first()
+            return jsonify(format_cart(cart)), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

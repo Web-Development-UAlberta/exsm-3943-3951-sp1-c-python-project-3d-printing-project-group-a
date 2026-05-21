@@ -38,16 +38,16 @@ export default function Navbar() {
           PrintShop
         </Link>
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-gray-100 hover:text-gray-900">
+          <Link href="/" className="text-gray-100 hover:text-teal-500">
             Models
           </Link>
-          <Link href="/cart" className="text-gray-200 hover:text-gray-900">
+          <Link href="/cart" className="text-gray-200 hover:text-teal-500">
             Cart
           </Link>
-          <Link href="/orders" className="text-gray-200 hover:text-gray-900">
+          <Link href="/orders" className="text-gray-200 hover:text-teal-500">
             Orders
           </Link>
-          <Link href="/profile" className="text-gray-200 hover:text-gray-900">
+          <Link href="/profile" className="text-gray-200 hover:text-teal-500">
             Profile
           </Link>
           {isAdmin && (

@@ -92,7 +92,14 @@ export default function AdminPage() {
     }
     setPrinters(printers.filter((p) => p.printer_id !== id));
   };
-
+  const removeOrder = async (id: number) => {
+    try {
+      await apiDelete(`/admin/orders/${id}`);
+      setOrders(orders.filter((o) => o.order_id !== id));
+    } catch (err: any) {
+      console.log("Could not remove order");
+    }
+  };
   const toggleAdmin = async (id: number) => {
     const user = users.find((u) => u.user_id === id);
     const isAdmin = user?.is_admin;
@@ -529,35 +536,45 @@ export default function AdminPage() {
                           {order.items?.[0]?.model || "--"}
                         </td>
                         <td className="px-4 py-3">
-                          <select
-                            defaultValue={order.order_status}
-                            onChange={async (e) => {
-                              try {
-                                await apiPut(
-                                  `/admin/orders/${order.order_id}`,
-                                  {
-                                    order_status: e.target.value,
-                                  },
-                                );
-                                setOrders(
-                                  orders.map((o) =>
-                                    o.order_id === order.order_id
-                                      ? { ...o, order_status: e.target.value }
-                                      : o,
-                                  ),
-                                );
-                              } catch (err: any) {
-                                console.log("Could not update order");
-                              }
-                            }}
-                            className="cursor-pointer rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
-                          >
-                            <option value="Pending">Pending</option>
-                            <option value="Printing">Printing</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Cancelled">Cancelled</option>
-                          </select>
+                          <div className="flex items-center gap-2">
+                            <select
+                              defaultValue={order.order_status}
+                              onChange={async (e) => {
+                                try {
+                                  await apiPut(
+                                    `/admin/orders/${order.order_id}`,
+                                    {
+                                      order_status: e.target.value,
+                                    },
+                                  );
+                                  setOrders(
+                                    orders.map((o) =>
+                                      o.order_id === order.order_id
+                                        ? { ...o, order_status: e.target.value }
+                                        : o,
+                                    ),
+                                  );
+                                } catch (err: any) {
+                                  console.log("Could not update order");
+                                }
+                              }}
+                              className="cursor-pointer rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="Printing">Printing</option>
+                              <option value="Shipped">Shipped</option>
+                              <option value="Completed">Completed</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                            {order.order_status === "Cancelled" && (
+                              <button
+                                onClick={() => removeOrder(order.order_id)}
+                                className="cursor-pointer rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}

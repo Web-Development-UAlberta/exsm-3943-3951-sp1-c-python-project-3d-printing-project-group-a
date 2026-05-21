@@ -31,8 +31,11 @@ export default function CheckoutPage() {
   }, []);
 
   const shipping = cartData?.shipping_price || 10;
-  const total = cartData?.total_price || 0;
-  const subtotal = total - shipping;
+  const subtotal = items.reduce(
+    (sum, item) => sum + (item.unit_price || 0) * (item.order_quantity || 1),
+    0,
+  );
+  const total = subtotal + shipping;
 
   const handlePlaceOrder = async () => {
     setError("");
@@ -130,33 +133,39 @@ export default function CheckoutPage() {
                 Card details are securely handled by Stripe
               </p>
             </div>
-
-            {/* Stripe Mock */}
+            {/* Payment form */}
             <div className="mb-6 rounded-2xl border border-gray-200 bg-gray-50 p-5">
-              <p className="mb-4 text-sm text-gray-400">
-                Stripe.js secure card element
-              </p>
-
               <div className="space-y-4">
-                <div className="rounded-xl border border-gray-300 bg-white px-4 py-3">
-                  <p className="text-xs text-gray-400">Card Number</p>
-
-                  <p className="mt-1 text-sm text-gray-300">
-                    4242 4242 4242 4242
-                  </p>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">
+                    Card Number
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="4242 4242 4242 4242"
+                    className="text-black w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none focus:border-black"
+                  />
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-xl border border-gray-300 bg-white px-4 py-3">
-                    <p className="text-xs text-gray-400">Expiry</p>
-
-                    <p className="mt-1 text-sm text-gray-300">MM / YY</p>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Expiry
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="04/28"
+                      className="text-black w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none focus:border-black"
+                    />
                   </div>
-
-                  <div className="rounded-xl border border-gray-300 bg-white px-4 py-3">
-                    <p className="text-xs text-gray-400">CVV</p>
-
-                    <p className="mt-1 text-sm text-gray-300">123</p>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      CVV
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="123"
+                      className="text-black w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm outline-none focus:border-black"
+                    />
                   </div>
                 </div>
               </div>
@@ -171,7 +180,7 @@ export default function CheckoutPage() {
               <input
                 type="text"
                 placeholder="John Smith"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-black"
+                className="text-black w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-black"
               />
             </div>
 
