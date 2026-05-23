@@ -24,7 +24,7 @@ export default function CustomUploadPage() {
     { name: "White", hex: "#FFFFFF" },
     { name: "Blue", hex: "#0000FF" },
     { name: "Red", hex: "#FF0000" },
-    { name: "Green", hex: "#00FF00" },
+
     { name: "Grey", hex: "#808080" },
   ];
 
@@ -378,7 +378,7 @@ export default function CustomUploadPage() {
                   <div>
                     <p className="text-sm font-medium text-slate-700">Color</p>
                     <p className="text-xs text-slate-500">
-                      5+ colors adds 5% surcharge
+                      5+ colors adds 5% surcharge in the Configurator
                     </p>
                   </div>
                   <button
@@ -403,7 +403,7 @@ export default function CustomUploadPage() {
                 {multiColorEnabled && (
                   <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-3">
                     <label className="text-xs text-blue-700 font-medium block mb-3">
-                      Pick your colors (select multiple):
+                      Colors of Selection (select multiple):
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {multiColorOptions.map((c) => (

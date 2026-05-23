@@ -353,26 +353,32 @@ export default function ConfiguratorPage() {
                     Choose colors
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {model?.filaments?.map((f: any) => {
-                      const active = selectedColors.includes(f.color_hex);
-                      return (
-                        <button
-                          key={f.filament_id}
-                          onClick={() => toggleColor(f.color_hex)}
-                          className={`cursor-pointer flex items-center gap-2 rounded-full px-3 py-2 text-sm transition ${
-                            active
-                              ? "bg-slate-950 text-white"
-                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                          }`}
-                        >
-                          <div
-                            className="w-4 h-4 rounded-full border border-slate-300"
-                            style={{ backgroundColor: f.color_hex }}
-                          />
-                          {f.material_name}
-                        </button>
-                      );
-                    })}
+                    {model?.filaments
+                      ?.filter(
+                        (f: any, index: number, self: any[]) =>
+                          self.findIndex((t) => t.color_hex === f.color_hex) ===
+                          index,
+                      )
+                      .map((f: any) => {
+                        const active = selectedColors.includes(f.color_hex);
+                        return (
+                          <button
+                            key={f.filament_id}
+                            onClick={() => toggleColor(f.color_hex)}
+                            className={`cursor-pointer flex items-center gap-2 rounded-full px-3 py-2 text-sm transition ${
+                              active
+                                ? "bg-slate-950 text-white"
+                                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            }`}
+                          >
+                            <div
+                              className="w-4 h-4 rounded-full border border-slate-300"
+                              style={{ backgroundColor: f.color_hex }}
+                            />
+                            {f.color_hex}
+                          </button>
+                        );
+                      })}
                   </div>
 
                   <p className="mt-3 text-xs text-slate-500">
@@ -396,7 +402,7 @@ export default function ConfiguratorPage() {
                 {multiColor
                   ? selectedColors.length >= 2
                     ? "ON — 5% surcharge applied"
-                    : "ON — no extra charge for under 2 colors"
+                    : "ON — no extra charge for under 5 colors"
                   : "OFF — click to enable"}
               </p>
             </div>
@@ -604,4 +610,4 @@ export default function ConfiguratorPage() {
     </div>
   );
 }
-5
+5;
