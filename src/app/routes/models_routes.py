@@ -72,68 +72,80 @@ def get_models():
 
 @models_bp.route("/upload", methods=["POST"])
 def custom_upload():
-    CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD')
-    MODEL_IMAGES = os.getenv('MODEL_IMAGES')
-    #CUSTOM_UPLOAD = "src/app/model_files/"
-    ALLOWED_FILE_EXTENSIONS = {'stl', '3mf'}
+    CUSTOM_UPLOAD = os.getenv('CUSTOM_UPLOAD', 'src/app/model_files/')
+    MODEL_IMAGES = os.getenv('MODEL_IMAGES', 'src/app/model_images/')
+    ALLOWED_EXTENSIONS = {'stl', '3mf'}
 
     def extension_check(filename):
         return '.' in filename and \
-            filename.rsplit('.', 1)[1].lower() in ALLOWED_FILE_EXTENSIONS
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
     try:
         if 'file' not in request.files:
             return jsonify({"error": "No file"}), 400
+
         file = request.files['file']
         if file.filename == '':
             return jsonify({"error": "No file selected"}), 400
-        if file and extension_check(file.filename):
-            if file:
-                filename = secure_filename(file.filename)
-                save_path = os.path.join(CUSTOM_UPLOAD, filename)
-                file.save(save_path)
-                #return jsonify({"message": "File uploaded", "filename": file.filename}), 200
-                custom_image = f"{MODEL_IMAGES}custom_print.png"
-                data = {
-                    "message": "File uploaded",
-                    "model_name": save_path,
-                    "model_description": "Custom Print",
-                    "model_length": 100,
-                    "model_width": 100,
-                    "model_height": 100,
-                    "model_file": save_path,
-                    "printer_id": 1,
-                    "print_time_hours": 3,
-                    "model_image": custom_image,
-                }
-                return jsonify(data), 200
-        else:
-            return jsonify({"error": "File extension not supported", "filename": file.filename}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-    
-@models_bp.route("/upload_model", methods=["POST"])
-def add_model():
-    info = request.get_json()
-    try:
+
+        if not extension_check(file.filename):
+            return jsonify({"error": "File extension not supported", "filename": file.filename}), 400
+
+        # save file
+        filename  = secure_filename(file.filename)
+        save_path = os.path.join(CUSTOM_UPLOAD, filename)
+        os.makedirs(CUSTOM_UPLOAD, exist_ok=True)
+        file.save(save_path)
+
+        # read pre-configured values from form data or json
+        model_length = float(request.form.get("model_length", 100))
+        model_width = float(request.form.get("model_width", 100))
+        model_height = float(request.form.get("model_height", 100))
+        scale = float(request.form.get("scale", 100))
+        infill_percent = float(request.form.get("infill_percent", 20))
+        color_count = int(request.form.get("color_count", 1))
+        filament_id = request.form.get("filament_id")
+        print_time_hours = float(request.form.get("print_time_hours", 3))
+        custom_image = f"{MODEL_IMAGES}custom_print.png"
+
+        # create model row in database
         with get_db() as db:
+
+            # find any available printer
+            from ..models import Printer
+            printer = db.query(Printer).first()
+            printer_id = printer.printer_id if printer else None
+
             model = Model(
-                model_name = info["model_name"],
-                model_length = info["model_length"],
-                model_width = info["model_width"],
-                model_height = info["model_height"],
-                model_description = info["model_description"],
-                print_time_hours = info["print_time_hours"],
-                printer_id = info["printer_id"]
+                model_name = f"Custom: {filename}",
+                model_length = model_length,
+                model_width = model_width,
+                model_height = model_height,
+                model_description = "Custom uploaded model",
+                model_file = save_path,
+                model_image = custom_image,
+                print_time_hours = print_time_hours,
+                printer_id = printer_id
             )
             db.add(model)
             db.flush()
+            model_id = model.model_id
 
-            return jsonify({
-                "message":  "Model added",
-                "model_id": model.model_id
-            }), 201
+        return jsonify({
+            "message": "File uploaded successfully",
+            "model_id": model_id,
+            "model_name": f"Custom: {filename}",
+            "model_length": model_length,
+            "model_width": model_width,
+            "model_height": model_height,
+            "scale": scale,
+            "infill_percent": infill_percent,
+            "color_count": color_count,
+            "filament_id": filament_id,
+            "print_time_hours": print_time_hours,
+            "redirect_to": f"/product/{model_id}"
+        }), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
