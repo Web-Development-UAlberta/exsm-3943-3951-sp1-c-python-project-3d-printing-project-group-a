@@ -33,7 +33,7 @@ def get_models():
             elif order == "desc":
                 query = query.order_by(Model.model_name.desc())
 
-            models = query.filter(Model.model_name.notlike('%custom product%')).all()   # ❗ REMOVE distinct()
+            models = query.filter(Model.model_name.notlike('%Custom:%')).all()   # ❗ REMOVE distinct()
 
             result = []
 
@@ -130,6 +130,15 @@ def custom_upload():
             db.add(model)
             db.flush()
             model_id = model.model_id
+            
+            # Link all the filaments to custom model
+            from ..models import ModelFilament, Filament
+            all_filaments = db.query(Filament).all()
+            for f in all_filaments:
+                db.add(ModelFilament(
+                    model_id=model_id,
+                    filament_id=f.filament_id
+                ))
 
         return jsonify({
             "message": "File uploaded successfully",

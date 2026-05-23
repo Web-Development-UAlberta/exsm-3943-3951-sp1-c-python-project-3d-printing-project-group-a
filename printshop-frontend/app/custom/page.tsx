@@ -91,8 +91,46 @@ export default function CustomUploadPage() {
     setIsUploading(true);
     setError("");
     try {
-      // Just redirect to Custom Print configurator
-      router.push(`/product/12`);
+      const token = localStorage.getItem("token");
+
+      // Build form data with file + pre-configured values
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("scale", scale.toString());
+      formData.append("infill_percent", infill.toString());
+      formData.append(
+        "color_count",
+        (multiColorEnabled
+          ? selectedColors.length || colorCount
+          : 1
+        ).toString(),
+      );
+      if (selectedFilament) {
+        formData.append("filament_id", selectedFilament.filament_id.toString());
+      }
+
+      const res = await fetch("http://127.0.0.1:5000/api/models/upload/", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+
+      // Redirect to configurator with real model_id and pre-configured values
+      const params = new URLSearchParams({
+        filament_id: selectedFilament?.filament_id?.toString() || "",
+        scale: scale.toString(),
+        infill: infill.toString(),
+        multicolor: multiColorEnabled.toString(),
+        color_count: (multiColorEnabled
+          ? selectedColors.length || colorCount
+          : 1
+        ).toString(),
+      });
+
+      router.push(`/product/${data.model_id}?${params.toString()}`);
     } catch (err: any) {
       setError(err.message);
     } finally {

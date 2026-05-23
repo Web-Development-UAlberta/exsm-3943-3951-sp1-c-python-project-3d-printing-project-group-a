@@ -3,10 +3,9 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { apiGet } from "../lib/api";
+import { apiGet, apiDelete } from "../lib/api";
 
 export default function ProfilePage() {
-  // hardcoded user data — later comes from backend
   const [user, setUser] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +46,23 @@ export default function ProfilePage() {
   }
 
   if (!user) return null;
+
+  const deleteAccount = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to permanently delete your account? This cannot be undone.",
+      )
+    )
+      return;
+    try {
+      await apiDelete(`/users/me`);
+      localStorage.clear();
+      alert("Your account has been deleted. Thank you for using PrintShop!");
+      window.location.href = "/";
+    } catch (err: any) {
+      alert("Could not delete account. Please try again.");
+    }
+  };
   const hasOrders = orders.length > 0;
 
   return (
@@ -93,12 +109,20 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <Link
-          href="/profile/edit"
-          className="mt-4 inline-block bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-        >
-          Edit profile
-        </Link>
+        <div className="mt-4 flex gap-3">
+          <Link
+            href="/profile/edit"
+            className="inline-block bg-gray-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+          >
+            Edit profile
+          </Link>
+          <button
+            onClick={deleteAccount}
+            className="inline-block bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-red-700"
+          >
+            Delete account
+          </button>
+        </div>
       </div>
 
       {/* Order History */}
