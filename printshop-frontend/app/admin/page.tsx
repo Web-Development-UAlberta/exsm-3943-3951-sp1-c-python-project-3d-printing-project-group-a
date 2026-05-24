@@ -152,6 +152,16 @@ export default function AdminPage() {
       console.log("Could not remove order");
     }
   };
+
+  const deleteUser = async (id: number) => {
+    if (!confirm("Permanently delete this user?")) return;
+    try {
+      await apiDelete(`/admin/users/${id}`);
+      setUsers(users.filter((u) => u.user_id !== id));
+    } catch (err: any) {
+      console.log("Could not delete user");
+    }
+  };
   const toggleAdmin = async (id: number) => {
     const user = users.find((u) => u.user_id === id);
     const isAdmin = user?.is_admin;
@@ -732,16 +742,26 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <button
-                            onClick={() => toggleAdmin(user.user_id || user.id)}
-                            className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                              user.is_admin
-                                ? "bg-rose-50 text-rose-700 hover:bg-rose-100"
-                                : "bg-blue-50 text-blue-700 hover:bg-blue-100"
-                            }`}
-                          >
-                            {user.is_admin ? "Remove admin" : "Make admin"}
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                toggleAdmin(user.user_id || user.id)
+                              }
+                              className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                                user.is_admin
+                                  ? "bg-rose-50 text-rose-700 hover:bg-rose-100"
+                                  : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                              }`}
+                            >
+                              {user.is_admin ? "Remove admin" : "Make admin"}
+                            </button>
+                            <button
+                              onClick={() => deleteUser(user.user_id)}
+                              className="cursor-pointer rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

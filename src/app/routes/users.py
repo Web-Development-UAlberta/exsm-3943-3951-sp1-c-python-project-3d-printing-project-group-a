@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..extensions import bcrypt
 from ..database import get_db
-from ..models import User
+from ..models import User, OrderHeader
 
 users_bp = Blueprint("users", __name__)
 
@@ -89,3 +89,24 @@ def change_password():
         return jsonify({"error": str(e)}), 500
     
     return jsonify({"message": "Password changed successfully"}), 200
+
+
+
+@users_bp.route("/me", methods=["DELETE"])
+@jwt_required()
+def delete_account():
+    user_id = int(get_jwt_identity())
+    try:
+        with get_db() as db:
+            user = db.query(User).filter_by(user_id=user_id).first()
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+            orders = db.query(OrderHeader).filter_by(user_id=user_id).all()
+            for order in orders:
+                for detail in order.details:
+                    db.delete(detail)
+                db.delete(order)
+            db.delete(user)
+            return jsonify({"message": "Account deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

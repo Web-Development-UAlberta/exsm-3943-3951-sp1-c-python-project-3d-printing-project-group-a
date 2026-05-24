@@ -20,9 +20,13 @@ export default function Navbar() {
         .then((data) => {
           setIsAdmin(data.is_admin || false);
         })
-        .catch(() => {});
+        .catch(() => {
+          setIsAdmin(false);
+        });
+    } else {
+      setIsAdmin(false);
     }
-  }, []);
+  });
 
   const handleSignOut = () => {
     localStorage.removeItem("token");

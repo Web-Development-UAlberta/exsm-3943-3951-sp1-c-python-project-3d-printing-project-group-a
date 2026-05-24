@@ -24,7 +24,7 @@ export default function CustomUploadPage() {
     { name: "White", hex: "#FFFFFF" },
     { name: "Blue", hex: "#0000FF" },
     { name: "Red", hex: "#FF0000" },
-    { name: "Green", hex: "#00FF00" },
+
     { name: "Grey", hex: "#808080" },
   ];
 
@@ -91,8 +91,46 @@ export default function CustomUploadPage() {
     setIsUploading(true);
     setError("");
     try {
-      // Just redirect to Custom Print configurator
-      router.push(`/product/12`);
+      const token = localStorage.getItem("token");
+
+      // Build form data with file + pre-configured values
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("scale", scale.toString());
+      formData.append("infill_percent", infill.toString());
+      formData.append(
+        "color_count",
+        (multiColorEnabled
+          ? selectedColors.length || colorCount
+          : 1
+        ).toString(),
+      );
+      if (selectedFilament) {
+        formData.append("filament_id", selectedFilament.filament_id.toString());
+      }
+
+      const res = await fetch("http://127.0.0.1:5000/api/models/upload/", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+
+      // Redirect to configurator with real model_id and pre-configured values
+      const params = new URLSearchParams({
+        filament_id: selectedFilament?.filament_id?.toString() || "",
+        scale: scale.toString(),
+        infill: infill.toString(),
+        multicolor: multiColorEnabled.toString(),
+        color_count: (multiColorEnabled
+          ? selectedColors.length || colorCount
+          : 1
+        ).toString(),
+      });
+
+      router.push(`/product/${data.model_id}?${params.toString()}`);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -340,7 +378,7 @@ export default function CustomUploadPage() {
                   <div>
                     <p className="text-sm font-medium text-slate-700">Color</p>
                     <p className="text-xs text-slate-500">
-                      5+ colors adds 5% surcharge
+                      5+ colors adds 5% surcharge in the Configurator
                     </p>
                   </div>
                   <button
@@ -365,7 +403,7 @@ export default function CustomUploadPage() {
                 {multiColorEnabled && (
                   <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-3">
                     <label className="text-xs text-blue-700 font-medium block mb-3">
-                      Pick your colors (select multiple):
+                      Colors of Selection (select multiple):
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {multiColorOptions.map((c) => (
